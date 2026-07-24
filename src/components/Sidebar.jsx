@@ -10,8 +10,9 @@ export default function Sidebar({
     ['home', '🏠', 'ホーム'],
     ['new', '➕', '新しい記録'],
     ['records', '📚', '記録一覧'],
+    ['memories', '📷', 'Memories'],
     ['chart', '📈', '成長グラフ'],
-    ['photos', '📷', '写真アルバム'],
+    ['photos', '🖼️', '記録写真'],
     ['tags', '🏷️', 'タグ検索'],
     ['settings', '⚙️', '設定'],
   ];

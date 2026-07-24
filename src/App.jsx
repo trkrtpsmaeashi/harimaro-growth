@@ -6,6 +6,7 @@ import LoginPage from './pages/LoginPage';
 import HomePage from './pages/HomePage';
 import NewRecordPage from './pages/NewRecordPage';
 import RecordsPage from './pages/RecordsPage';
+import MemoriesPage from './pages/MemoriesPage';
 import ChartPage from './pages/ChartPage';
 import PhotosPage from './pages/PhotosPage';
 import TagsPage from './pages/TagsPage';
@@ -14,6 +15,7 @@ import SettingsPage from './pages/SettingsPage';
 export default function App() {
   const [user, setUser] = useState(null);
   const [records, setRecords] = useState([]);
+  const [memories, setMemories] = useState([]);
   const [page, setPage] = useState('home');
   const [menuOpen, setMenuOpen] = useState(false);
   const [photoUrl, setPhotoUrl] = useState('');
@@ -29,6 +31,21 @@ export default function App() {
     setRecords(data || []);
   }
 
+  async function loadMemories() {
+    const { data, error } = await supabase
+      .from('harimaro_memories')
+      .select('*')
+      .order('memory_date', { ascending: false })
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    setMemories(data || []);
+  }
+
+  async function loadAll() {
+    await Promise.all([loadRecords(), loadMemories()]);
+  }
+
   async function deleteRecord(id, photoPath) {
     if (!confirm('この記録を削除する？')) return;
     if (photoPath) await supabase.storage.from('harimaro-photos').remove([photoPath]);
@@ -40,7 +57,7 @@ export default function App() {
     const { data: listener } = supabase.auth.onAuthStateChange(async (_event, session) => {
       const nextUser = session?.user || null;
       setUser(nextUser);
-      if (nextUser) await loadRecords();
+      if (nextUser) await loadAll();
     });
 
     return () => listener.subscription.unsubscribe();
@@ -63,6 +80,15 @@ export default function App() {
     );
   } else if (page === 'records') {
     content = <RecordsPage records={records} onPhoto={setPhotoUrl} onDelete={deleteRecord} />;
+  } else if (page === 'memories') {
+    content = (
+      <MemoriesPage
+        user={user}
+        memories={memories}
+        onReload={loadMemories}
+        onPhoto={setPhotoUrl}
+      />
+    );
   } else if (page === 'chart') {
     content = <ChartPage records={records} />;
   } else if (page === 'photos') {

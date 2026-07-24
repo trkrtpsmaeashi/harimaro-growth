@@ -1,0 +1,12 @@
+Harimaro Memories v0.3
+
+追加機能:
+- 体重なしで、日付・写真・ひとことを保存
+- Memories専用アルバム
+- 写真タップで拡大
+- 思い出写真の削除
+
+作業:
+1. GitHubへこのフォルダの中身をアップロード
+2. Supabase SQL Editorで supabase/add_memories.sql を全文実行
+3. Vercelの再デプロイ完了後、アプリを更新

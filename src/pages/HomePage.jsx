@@ -75,7 +75,7 @@ export default function HomePage({
           <h2>すぐ見る</h2>
           <div className="quick-menu">
             <button onClick={() => onNavigate('chart')}>📈 成長グラフ</button>
-            <button onClick={() => onNavigate('photos')}>📷 写真アルバム</button>
+            <button onClick={() => onNavigate('memories')}>📷 Memories</button>
             <button onClick={() => onNavigate('records')}>📚 記録一覧</button>
             <button onClick={() => onNavigate('new')}>➕ 新しい記録</button>
           </div>
