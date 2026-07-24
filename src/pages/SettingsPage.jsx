@@ -53,7 +53,7 @@ export default function SettingsPage({
     try {
       const result = await createInviteCode();
       setInviteCode(result.invite_code);
-      setHouseholdMessage('このコードを彼氏さんへ送ってね。');
+      setHouseholdMessage('このコードを共有したいメンバーへ送ってください。');
     } catch (error) {
       setHouseholdMessage(error.message);
     }
@@ -141,7 +141,7 @@ export default function SettingsPage({
         <div className="section-heading">
           <div>
             <p className="eyebrow">SHARED HOME</p>
-            <h2>はりまろのおうち</h2>
+            <h2>共有グループ</h2>
           </div>
           <span className="member-count-pill">
             👥 {household?.member_count || 1}人
@@ -149,12 +149,12 @@ export default function SettingsPage({
         </div>
 
         <p className="notification-note">
-          招待コードを使うと、彼氏さんと同じ体重記録・Memories・イベントを共同で見たり追加したりできます。
+          招待コードを使うと、家族やパートナーなどのメンバーと同じ体重記録・Memories・イベントを共同で見たり追加したりできます。
         </p>
 
         <div className="household-name-box">
           <span>共有グループ</span>
-          <strong>{household?.household_name || 'はりまろのおうち'}</strong>
+          <strong>{household?.household_name || '共有グループ'}</strong>
           <small>
             あなたの役割：{household?.my_role === 'owner' ? 'オーナー' : 'メンバー'}
           </small>
@@ -177,7 +177,7 @@ export default function SettingsPage({
         {household?.my_role === 'owner' && (
           <div className="invite-box">
             <div>
-              <h3>彼氏さんを招待する</h3>
+              <h3>メンバーを招待</h3>
               <p>招待コードは24時間だけ有効です。</p>
             </div>
 
@@ -233,7 +233,7 @@ export default function SettingsPage({
         <div className="join-box">
           <h3>招待されたグループへ参加</h3>
           <p>
-            彼氏さん側のアカウントで、受け取った6文字コードを入力します。
+            招待されたメンバーのアカウントで、受け取った6文字コードを入力します。
           </p>
 
           <div className="join-code-row">
