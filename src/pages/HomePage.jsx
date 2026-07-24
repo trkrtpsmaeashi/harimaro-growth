@@ -162,6 +162,7 @@ export default function HomePage({
             <button onClick={() => onNavigate('chart')}>📈 成長グラフ</button>
             <button onClick={() => onNavigate('records')}>📚 記録一覧</button>
             <button onClick={() => onNavigate('calendar')}>📅 カレンダー</button>
+            <button onClick={() => onNavigate('report')}>📖 月間レポート</button>
             <button onClick={() => onNavigate('new')}>➕ 新しい記録</button>
           </div>
         </article>
