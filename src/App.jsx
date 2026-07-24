@@ -33,13 +33,29 @@ export default function App() {
 
   async function loadMemories() {
     const { data, error } = await supabase
-      .from('harimaro_memories')
-      .select('*')
+      .from('harimaro_memory_posts')
+      .select(`
+        *,
+        photos:harimaro_memory_photos (
+          id,
+          photo_url,
+          photo_path,
+          sort_order
+        )
+      `)
       .order('memory_date', { ascending: false })
       .order('created_at', { ascending: false });
 
     if (error) throw error;
-    setMemories(data || []);
+
+    const normalized = (data || []).map((post) => ({
+      ...post,
+      photos: [...(post.photos || [])].sort(
+        (a, b) => a.sort_order - b.sort_order
+      ),
+    }));
+
+    setMemories(normalized);
   }
 
   async function loadAll() {

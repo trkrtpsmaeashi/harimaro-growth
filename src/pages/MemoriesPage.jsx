@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { supabase } from '../lib/supabase';
-import { formatDate, today } from '../lib/helpers';
+import { today } from '../lib/helpers';
+import MemoryPostCard from '../components/MemoryPostCard';
 
 function monthLabel(dateText) {
   if (!dateText) return '';
@@ -96,11 +97,29 @@ export default function MemoriesPage({
       .map((tag) => tag.trim())
       .filter(Boolean);
 
-    const uploadedPaths = [];
-    const rows = [];
+    const { data: post, error: postError } = await supabase
+      .from('harimaro_memory_posts')
+      .insert({
+        user_id: user.id,
+        memory_date: date,
+        caption: caption.trim(),
+        tags: parsedTags,
+        is_favorite: false,
+      })
+      .select()
+      .single();
 
-    for (const file of files) {
-      const path = `${user.id}/memories/${crypto.randomUUID()}-${file.name.replace(/[^\w.-]/g, '_')}`;
+    if (postError) {
+      setMessage(postError.message);
+      return;
+    }
+
+    const uploadedPaths = [];
+    const photoRows = [];
+
+    for (let index = 0; index < files.length; index += 1) {
+      const file = files[index];
+      const path = `${user.id}/memory-posts/${post.id}/${crypto.randomUUID()}-${file.name.replace(/[^\w.-]/g, '_')}`;
 
       const upload = await supabase.storage
         .from('harimaro-photos')
@@ -113,6 +132,11 @@ export default function MemoriesPage({
             .remove(uploadedPaths);
         }
 
+        await supabase
+          .from('harimaro_memory_posts')
+          .delete()
+          .eq('id', post.id);
+
         setMessage(upload.error.message);
         return;
       }
@@ -123,27 +147,29 @@ export default function MemoriesPage({
         .from('harimaro-photos')
         .getPublicUrl(path).data.publicUrl;
 
-      rows.push({
-        user_id: user.id,
-        memory_date: date,
-        caption: caption.trim(),
-        tags: parsedTags,
+      photoRows.push({
+        post_id: post.id,
         photo_url: photoUrl,
         photo_path: path,
-        is_favorite: false,
+        sort_order: index,
       });
     }
 
-    const { error } = await supabase
-      .from('harimaro_memories')
-      .insert(rows);
+    const { error: photosError } = await supabase
+      .from('harimaro_memory_photos')
+      .insert(photoRows);
 
-    if (error) {
+    if (photosError) {
       await supabase.storage
         .from('harimaro-photos')
         .remove(uploadedPaths);
 
-      setMessage(error.message);
+      await supabase
+        .from('harimaro_memory_posts')
+        .delete()
+        .eq('id', post.id);
+
+      setMessage(photosError.message);
       return;
     }
 
@@ -151,16 +177,16 @@ export default function MemoriesPage({
     setCaption('');
     setTags('');
     setFiles([]);
-    setMessage(`${savedCount}枚保存しました。`);
+    setMessage(`${savedCount}枚を1つの思い出として保存しました。`);
     document.querySelector('#memoryPhoto').value = '';
     await onReload();
   }
 
-  async function toggleFavorite(memory) {
+  async function toggleFavorite(post) {
     const { error } = await supabase
-      .from('harimaro_memories')
-      .update({ is_favorite: !memory.is_favorite })
-      .eq('id', memory.id);
+      .from('harimaro_memory_posts')
+      .update({ is_favorite: !post.is_favorite })
+      .eq('id', post.id);
 
     if (error) {
       alert(error.message);
@@ -170,19 +196,23 @@ export default function MemoriesPage({
     await onReload();
   }
 
-  async function deleteMemory(memory) {
-    if (!confirm('この思い出を削除する？')) return;
+  async function deletePost(post) {
+    if (!confirm('この思い出投稿を写真ごと削除する？')) return;
 
-    if (memory.photo_path) {
+    const paths = (post.photos || [])
+      .map((photo) => photo.photo_path)
+      .filter(Boolean);
+
+    if (paths.length) {
       await supabase.storage
         .from('harimaro-photos')
-        .remove([memory.photo_path]);
+        .remove(paths);
     }
 
     const { error } = await supabase
-      .from('harimaro_memories')
+      .from('harimaro_memory_posts')
       .delete()
-      .eq('id', memory.id);
+      .eq('id', post.id);
 
     if (error) {
       alert(error.message);
@@ -198,7 +228,7 @@ export default function MemoriesPage({
         <p className="eyebrow">MEMORIES</p>
         <h2>思い出を残す</h2>
         <p className="muted">
-          体重を測らない日も、写真だけ気軽に残せます。
+          複数の写真を、1つの思い出投稿として保存できます。
         </p>
       </section>
 
@@ -225,10 +255,11 @@ export default function MemoriesPage({
                 event.target.value = '';
               }}
             />
+
             <p className="selected-files">
               {files.length
-                ? `${files.length}枚選択中。もう一度「ファイルを選択」を押すと追加できます。`
-                : '一度に複数枚、または1枚ずつ繰り返し追加できます。'}
+                ? `${files.length}枚選択中。もう一度選択すると追加できます。`
+                : '1枚ずつでも、複数枚まとめても追加できます。'}
             </p>
 
             {files.length > 0 && (
@@ -276,7 +307,7 @@ export default function MemoriesPage({
 
         <div className="button-row">
           <button onClick={saveMemory}>
-            📷 {files.length > 1 ? `${files.length}枚を保存` : '思い出を保存'}
+            📷 {files.length > 1 ? `${files.length}枚を投稿` : '思い出を投稿'}
           </button>
         </div>
 
@@ -289,7 +320,7 @@ export default function MemoriesPage({
           <h2>Memories</h2>
         </div>
         <span className="count-pill">
-          {filteredMemories.length} / {memories.length}枚
+          {filteredMemories.length} / {memories.length}投稿
         </span>
       </section>
 
@@ -332,54 +363,25 @@ export default function MemoriesPage({
       </section>
 
       {Object.keys(groupedMemories).length ? (
-        Object.entries(groupedMemories).map(([label, items]) => (
+        Object.entries(groupedMemories).map(([label, posts]) => (
           <section key={label} className="memory-month">
             <h3>{label}</h3>
 
-            <div className="memory-grid">
-              {items.map((memory) => (
-                <article key={memory.id} className="memory-card">
-                  <div className="memory-photo-wrap">
-                    <button
-                      className="memory-photo"
-                      onClick={() => onPhoto(memory.photo_url)}
-                    >
-                      <img src={memory.photo_url} alt="はりまろの思い出" />
-                    </button>
-
-                    <button
-                      className={`favorite-button ${memory.is_favorite ? 'active' : ''}`}
-                      aria-label="お気に入り"
-                      onClick={() => toggleFavorite(memory)}
-                    >
-                      {memory.is_favorite ? '❤️' : '🤍'}
-                    </button>
-                  </div>
-
-                  <div className="memory-card-body">
-                    <time>{formatDate(memory.memory_date)}</time>
-                    <p>{memory.caption || 'ひとことなし'}</p>
-
-                    <div className="tag-list">
-                      {(memory.tags || []).map((tag) => (
-                        <span key={tag} className="tag">{tag}</span>
-                      ))}
-                    </div>
-
-                    <button
-                      className="delete-button memory-delete"
-                      onClick={() => deleteMemory(memory)}
-                    >
-                      削除
-                    </button>
-                  </div>
-                </article>
+            <div className="memory-post-grid">
+              {posts.map((post) => (
+                <MemoryPostCard
+                  key={post.id}
+                  post={post}
+                  onToggleFavorite={toggleFavorite}
+                  onDelete={deletePost}
+                  onOpenPhoto={onPhoto}
+                />
               ))}
             </div>
           </section>
         ))
       ) : (
-        <p className="card muted">条件に合う思い出写真がありません。</p>
+        <p className="card muted">条件に合う思い出がありません。</p>
       )}
     </>
   );

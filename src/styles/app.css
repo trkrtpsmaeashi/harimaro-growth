@@ -236,3 +236,115 @@ input,textarea{width:100%;padding:13px;border:1px solid #dcd3c9;border-radius:13
   font-size:12px;
   font-weight:700;
 }
+
+
+/* Memories v0.7 carousel posts */
+.memory-post-grid{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:16px;
+}
+.memory-post-card{
+  overflow:hidden;
+  border:1px solid var(--border);
+  border-radius:21px;
+  background:#fff;
+  box-shadow:0 8px 25px rgba(72,55,43,.06);
+}
+.memory-carousel{
+  position:relative;
+  overflow:hidden;
+  background:#eee7df;
+  touch-action:pan-y;
+}
+.memory-carousel-photo{
+  width:100%;
+  padding:0;
+  border:0;
+  background:transparent;
+}
+.memory-carousel-photo img{
+  display:block;
+  width:100%;
+  aspect-ratio:1/1;
+  object-fit:cover;
+}
+.memory-carousel-empty{
+  display:grid;
+  place-items:center;
+  aspect-ratio:1/1;
+  font-size:42px;
+}
+.carousel-arrow{
+  position:absolute;
+  top:50%;
+  width:38px;
+  height:38px;
+  display:grid;
+  place-items:center;
+  padding:0;
+  border:0;
+  border-radius:50%;
+  background:rgba(255,255,255,.9);
+  color:#4a4038;
+  font-size:28px;
+  line-height:1;
+  box-shadow:0 3px 12px rgba(0,0,0,.18);
+  transform:translateY(-50%);
+}
+.carousel-arrow-left{
+  left:9px;
+}
+.carousel-arrow-right{
+  right:9px;
+}
+.carousel-count{
+  position:absolute;
+  top:11px;
+  left:11px;
+  padding:5px 9px;
+  border-radius:999px;
+  background:rgba(32,27,24,.68);
+  color:#fff;
+  font-size:11px;
+  font-weight:800;
+}
+.carousel-dots{
+  display:flex;
+  justify-content:center;
+  gap:6px;
+  padding:10px 12px 3px;
+}
+.carousel-dots button{
+  width:7px;
+  height:7px;
+  padding:0;
+  border:0;
+  border-radius:50%;
+  background:#d5cec6;
+}
+.carousel-dots button.active{
+  background:var(--green);
+}
+.memory-post-body{
+  padding:13px;
+}
+.memory-post-body time{
+  color:var(--muted);
+  font-size:12px;
+}
+.memory-post-body p{
+  min-height:42px;
+  margin:8px 0 12px;
+  line-height:1.6;
+}
+@media(max-width:720px){
+  .memory-post-grid{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+}
+@media(max-width:430px){
+  .memory-post-grid{
+    grid-template-columns:1fr;
+  }
+}

@@ -1,0 +1,17 @@
+Harimaro Memories v0.7
+
+追加:
+- 同じ投稿の複数写真をInstagram風カルーセル表示
+- 左右スワイプ
+- 左右矢印
+- ページ数とドット表示
+- 1投稿単位のお気に入り・削除
+- 旧Memoriesデータを新形式へ自動移行
+
+作業:
+1. GitHubへこのフォルダの中身を上書きアップロード
+2. Supabase SQL Editorで supabase/migrate_memories_v07.sql を全文実行
+3. VercelがReadyになったらアプリを更新
+
+旧harimaro_memoriesテーブルは削除しません。
+既存写真は新しい投稿形式へコピーされます。
