@@ -7,6 +7,7 @@ export default function Layout({
   currentPage,
   setCurrentPage,
   email,
+  role,
   onLogout,
 }) {
   return (
@@ -22,6 +23,7 @@ export default function Layout({
       <Sidebar
         open={menuOpen}
         currentPage={currentPage}
+        role={role}
         email={email}
         onClose={() => setMenuOpen(false)}
         onNavigate={setCurrentPage}

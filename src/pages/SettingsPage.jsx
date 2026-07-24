@@ -4,6 +4,8 @@ import {
   joinHousehold,
   updateDisplayName,
   loadHouseholdMembers,
+  removeHouseholdMember,
+  changeHouseholdMemberRole,
 } from '../lib/household';
 import {
   canShowBrowserNotifications,
@@ -18,6 +20,8 @@ export default function SettingsPage({
   notificationSettings,
   onChangeNotificationSettings,
   household,
+  canEdit,
+  isViewer,
   onHouseholdChanged,
 }) {
   const [inviteCode, setInviteCode] = useState('');
@@ -27,6 +31,7 @@ export default function SettingsPage({
   );
   const [householdMessage, setHouseholdMessage] = useState('');
   const [members, setMembers] = useState([]);
+  const [inviteRole, setInviteRole] = useState('editor');
   const permission =
     canShowBrowserNotifications() ? Notification.permission : 'unsupported';
 
@@ -133,9 +138,33 @@ export default function SettingsPage({
     setHouseholdMessage('招待コードを作成中…');
 
     try {
-      const result = await createInviteCode();
+      const result = await createInviteCode(inviteRole);
       setInviteCode(result.invite_code);
       setHouseholdMessage('このコードを共有したいメンバーへ送ってください。');
+    } catch (error) {
+      setHouseholdMessage(error.message);
+    }
+  }
+
+  async function removeMember(userId, name) {
+    if (!confirm(`${name || 'このメンバー'}を共有グループから外す？`)) return;
+
+    try {
+      await removeHouseholdMember(userId);
+      setHouseholdMessage('メンバーを削除しました。');
+      await refreshMembers();
+      await onHouseholdChanged();
+    } catch (error) {
+      setHouseholdMessage(error.message);
+    }
+  }
+
+  async function changeMemberRole(userId, role) {
+    try {
+      await changeHouseholdMemberRole(userId, role);
+      setHouseholdMessage('権限を変更しました。');
+      await refreshMembers();
+      await onHouseholdChanged();
     } catch (error) {
       setHouseholdMessage(error.message);
     }
@@ -263,6 +292,30 @@ export default function SettingsPage({
               <p>招待コードは24時間だけ有効です。</p>
             </div>
 
+            <div className="invite-role-picker">
+              <label>
+                <input
+                  type="radio"
+                  name="inviteRole"
+                  value="editor"
+                  checked={inviteRole === 'editor'}
+                  onChange={() => setInviteRole('editor')}
+                />
+                ✏️ 編集メンバー
+              </label>
+
+              <label>
+                <input
+                  type="radio"
+                  name="inviteRole"
+                  value="viewer"
+                  checked={inviteRole === 'viewer'}
+                  onChange={() => setInviteRole('viewer')}
+                />
+                👀 閲覧専用メンバー
+              </label>
+            </div>
+
             <button type="button" onClick={generateInvite}>
               招待コードを発行
             </button>
@@ -302,18 +355,58 @@ export default function SettingsPage({
             </button>
           </div>
 
+          <p className="member-privacy-note">
+            オーナーは全員を確認できます。編集メンバーと閲覧専用メンバーには、
+            オーナーと自分だけが表示されます。
+          </p>
+
           {members.length > 0 ? (
             <div className="household-member-list">
               {members.map((member) => (
                 <div key={member.user_id} className="household-member-item">
-                  <span>👤</span>
+                  <span>
+                    {member.role === 'owner'
+                      ? '👑'
+                      : member.role === 'editor'
+                      ? '✏️'
+                      : '👀'}
+                  </span>
+
                   <div>
                     <strong>{member.display_name || '名前未設定'}</strong>
                     <small>
-                      {member.role === 'owner' ? 'オーナー' : 'メンバー'}
+                      {member.role === 'owner'
+                        ? 'オーナー'
+                        : member.role === 'editor'
+                        ? '編集メンバー'
+                        : '閲覧専用メンバー'}
                     </small>
                   </div>
-                  {member.is_me && <em>あなた</em>}
+
+                  {member.is_me ? (
+                    <em>あなた</em>
+                  ) : household?.my_role === 'owner' ? (
+                    <div className="member-owner-actions">
+                      <select
+                        value={member.role}
+                        onChange={(event) =>
+                          changeMemberRole(member.user_id, event.target.value)
+                        }
+                      >
+                        <option value="editor">編集メンバー</option>
+                        <option value="viewer">閲覧専用</option>
+                      </select>
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          removeMember(member.user_id, member.display_name)
+                        }
+                      >
+                        削除
+                      </button>
+                    </div>
+                  ) : null}
                 </div>
               ))}
             </div>

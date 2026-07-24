@@ -26,6 +26,10 @@ export default function App() {
   const [user, setUser] = useState(null);
   const [records, setRecords] = useState([]);
   const [household, setHousehold] = useState(null);
+
+  const canEdit =
+    household?.my_role === 'owner' || household?.my_role === 'editor';
+  const isViewer = household?.my_role === 'viewer';
   const [memories, setMemories] = useState([]);
   const [events, setEvents] = useState([]);
   const [page, setPage] = useState('home');
@@ -172,11 +176,12 @@ export default function App() {
 
   let content;
 
-  if (page === 'new') {
+  if (page === 'new' && canEdit) {
     content = (
       <NewRecordPage
         user={user}
         householdId={household?.household_id}
+        canEdit={canEdit}
         onSaved={async () => {
           await loadRecords();
           setPage('home');
@@ -185,13 +190,22 @@ export default function App() {
       />
     );
   } else if (page === 'records') {
-    content = <RecordsPage records={records} onPhoto={setPhotoUrl} onDelete={deleteRecord} />;
+    content = (
+      <RecordsPage
+        records={records}
+        canEdit={canEdit}
+        onPhoto={setPhotoUrl}
+        onDelete={canEdit ? deleteRecord : undefined}
+      />
+    );
   } else if (page === 'memories') {
     content = (
       <MemoriesPage
         user={user}
         householdId={household?.household_id}
         memories={memories}
+        canEdit={canEdit}
+        isViewer={isViewer}
         onReload={loadMemories}
         onOpenDetail={(post, index) => {
           setDetailPost(post);
@@ -257,6 +271,7 @@ export default function App() {
         user={user}
         householdId={household?.household_id}
         records={records}
+        canEdit={canEdit}
         memories={memories}
         events={events}
         onReloadEvents={loadEvents}
@@ -275,6 +290,8 @@ export default function App() {
         notificationSettings={notificationSettings}
         onChangeNotificationSettings={updateNotificationSettings}
         household={household}
+        canEdit={canEdit}
+        isViewer={isViewer}
         onHouseholdChanged={refreshHousehold}
       />
     );
@@ -283,6 +300,7 @@ export default function App() {
       <HomePage
         records={records}
         memories={memories}
+        canEdit={canEdit}
         onNavigate={setPage}
         notificationSettings={notificationSettings}
         onPhoto={setPhotoUrl}
@@ -303,6 +321,7 @@ export default function App() {
         currentPage={page}
         setCurrentPage={setPage}
         email={user.email}
+        role={household?.my_role}
         onLogout={() => supabase.auth.signOut()}
       >
         {content}
@@ -314,8 +333,10 @@ export default function App() {
         post={detailPost}
         initialIndex={detailIndex}
         onClose={() => setDetailPost(null)}
-        onToggleFavorite={async (post) => {
-          const { error } = await supabase
+        onToggleFavorite={
+          canEdit
+            ? async (post) => {
+                const { error } = await supabase
             .from('harimaro_memory_posts')
             .update({ is_favorite: !post.is_favorite })
             .eq('id', post.id);
@@ -332,7 +353,9 @@ export default function App() {
               ? { ...current, is_favorite: !current.is_favorite }
               : current
           );
-        }}
+              }
+            : undefined
+        }
       />
     </>
   );

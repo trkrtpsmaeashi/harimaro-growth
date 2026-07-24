@@ -1,6 +1,6 @@
 import RecordCard from '../components/RecordCard';
 
-export default function RecordsPage({ records, onPhoto, onDelete }) {
+export default function RecordsPage({ records, canEdit, onPhoto, onDelete }) {
   return (
     <>
       <section className="page-heading">
@@ -14,7 +14,7 @@ export default function RecordsPage({ records, onPhoto, onDelete }) {
             key={record.id}
             record={record}
             onPhoto={onPhoto}
-            onDelete={onDelete}
+            onDelete={canEdit ? onDelete : undefined}
           />
         )) : <p className="muted">まだ記録がありません。</p>}
       </section>

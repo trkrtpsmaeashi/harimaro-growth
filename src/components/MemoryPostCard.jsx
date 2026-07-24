@@ -3,8 +3,11 @@ import { formatDate } from '../lib/helpers';
 
 export default function MemoryPostCard({
   post,
+  canEdit,
+  isViewer,
   onToggleFavorite,
   onDelete,
+  onDownload,
   onOpenDetail,
 }) {
   const [index, setIndex] = useState(0);
@@ -89,14 +92,16 @@ export default function MemoryPostCard({
           </>
         )}
 
-        <button
-          type="button"
-          className={`favorite-button ${post.is_favorite ? 'active' : ''}`}
-          onClick={() => onToggleFavorite(post)}
-          aria-label="お気に入り"
-        >
-          {post.is_favorite ? '❤️' : '🤍'}
-        </button>
+        {canEdit && onToggleFavorite && (
+          <button
+            type="button"
+            className={`favorite-button ${post.is_favorite ? 'active' : ''}`}
+            onClick={() => onToggleFavorite(post)}
+            aria-label="お気に入り"
+          >
+            {post.is_favorite ? '❤️' : '🤍'}
+          </button>
+        )}
       </div>
 
       {photos.length > 1 && (
@@ -123,13 +128,32 @@ export default function MemoryPostCard({
           ))}
         </div>
 
-        <button
-          type="button"
-          className="delete-button memory-delete"
-          onClick={() => onDelete(post)}
-        >
-          投稿を削除
-        </button>
+        <div className="memory-card-actions">
+          {isViewer && currentPhoto && (
+            <button
+              type="button"
+              className="download-photo-button"
+              onClick={() =>
+                onDownload(
+                  currentPhoto.photo_url,
+                  `harimaro-${post.memory_date}-${index + 1}.jpg`
+                )
+              }
+            >
+              ⬇ 写真を保存
+            </button>
+          )}
+
+          {canEdit && onDelete && (
+            <button
+              type="button"
+              className="delete-button memory-delete"
+              onClick={() => onDelete(post)}
+            >
+              投稿を削除
+            </button>
+          )}
+        </div>
       </div>
     </article>
   );

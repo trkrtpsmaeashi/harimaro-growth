@@ -15,6 +15,8 @@ export default function MemoriesPage({
   user,
   householdId,
   memories,
+  canEdit,
+  isViewer,
   onReload,
   onOpenDetail,
 }) {
@@ -84,6 +86,23 @@ export default function MemoriesPage({
       return groups;
     }, {});
   }, [filteredMemories]);
+
+  async function downloadPhoto(url, filename = 'harimaro-memory.jpg') {
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const objectUrl = URL.createObjectURL(blob);
+      const anchor = document.createElement('a');
+      anchor.href = objectUrl;
+      anchor.download = filename;
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      URL.revokeObjectURL(objectUrl);
+    } catch {
+      window.open(url, '_blank', 'noopener,noreferrer');
+    }
+  }
 
   async function saveMemory() {
     if (!date || files.length === 0) {
@@ -237,6 +256,7 @@ export default function MemoriesPage({
         </p>
       </section>
 
+      {canEdit && (
       <section className="card memory-form">
         <div className="form-grid">
           <div>
@@ -319,6 +339,8 @@ export default function MemoriesPage({
         <p className="message">{message}</p>
       </section>
 
+      )}
+
       <section className="section-heading memory-heading">
         <div>
           <p className="eyebrow">ALBUM</p>
@@ -377,8 +399,11 @@ export default function MemoriesPage({
                 <MemoryPostCard
                   key={post.id}
                   post={post}
-                  onToggleFavorite={toggleFavorite}
-                  onDelete={deletePost}
+                  canEdit={canEdit}
+                  isViewer={isViewer}
+                  onToggleFavorite={canEdit ? toggleFavorite : undefined}
+                  onDelete={canEdit ? deletePost : undefined}
+                  onDownload={downloadPhoto}
                   onOpenDetail={onOpenDetail}
                 />
               ))}

@@ -1,4 +1,4 @@
-export default function Sidebar({
+export default function Sidebar({ role,
   open,
   currentPage,
   email,
@@ -6,7 +6,7 @@ export default function Sidebar({
   onNavigate,
   onLogout,
 }) {
-  const items = [
+  const allItems = [
     ['home', '🏠', 'ホーム'],
     ['new', '➕', '新しい記録'],
     ['records', '📚', '記録一覧'],
@@ -20,6 +20,12 @@ export default function Sidebar({
     ['timeline', '📜', 'はりまろ年表'],
     ['settings', '⚙️', '設定'],
   ];
+
+  const hiddenForViewer = new Set(['new', 'photos', 'tags']);
+  const items =
+    role === 'viewer'
+      ? allItems.filter(([id]) => !hiddenForViewer.has(id))
+      : allItems;
 
   return (
     <>

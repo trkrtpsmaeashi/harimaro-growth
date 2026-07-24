@@ -14,8 +14,10 @@ export async function loadHouseholdSummary() {
   return data;
 }
 
-export async function createInviteCode() {
-  const { data, error } = await supabase.rpc('create_household_invite');
+export async function createInviteCode(memberRole = 'editor') {
+  const { data, error } = await supabase.rpc('create_household_invite', {
+    invite_role_input: memberRole,
+  });
 
   if (error) throw error;
   return data;
@@ -45,4 +47,24 @@ export async function loadHouseholdMembers() {
 
   if (error) throw error;
   return data || [];
+}
+
+
+export async function removeHouseholdMember(userId) {
+  const { data, error } = await supabase.rpc('remove_household_member', {
+    target_user_id: userId,
+  });
+
+  if (error) throw error;
+  return data;
+}
+
+export async function changeHouseholdMemberRole(userId, role) {
+  const { data, error } = await supabase.rpc('change_household_member_role', {
+    target_user_id: userId,
+    new_role: role,
+  });
+
+  if (error) throw error;
+  return data;
 }

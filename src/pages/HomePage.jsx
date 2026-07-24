@@ -26,6 +26,7 @@ export default function HomePage({
   onDelete,
   onOpenMemory,
   notificationSettings,
+  canEdit,
 }) {
   const latest = records[0];
   const previous = records[1];
@@ -114,7 +115,7 @@ export default function HomePage({
   return (
     <>
 
-      {reminders.length > 0 && (
+      {canEdit && reminders.length > 0 && (
         <section className="home-reminder-stack">
           {reminders.map((reminder) => (
             <article
@@ -144,14 +145,16 @@ export default function HomePage({
           <h2>はりまろの今</h2>
           <p>体重と写真をまとめて、今日のはりまろを確認できます。</p>
 
-          <div className="hero-actions">
-            <button className="primary-button" onClick={() => onNavigate('new')}>
-              ➕ 今日の記録を書く
-            </button>
-            <button className="secondary-action" onClick={() => onNavigate('memories')}>
-              📷 思い出を残す
-            </button>
-          </div>
+          {canEdit && (
+            <div className="hero-actions">
+              <button className="primary-button" onClick={() => onNavigate('new')}>
+                ➕ 今日の記録を書く
+              </button>
+              <button className="secondary-action" onClick={() => onNavigate('memories')}>
+                📷 思い出を残す
+              </button>
+            </div>
+          )}
         </div>
 
         {latestMemory?.photos?.[0] ? (

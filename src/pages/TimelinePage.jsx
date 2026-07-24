@@ -29,6 +29,7 @@ function yearOf(item) {
 export default function TimelinePage({
   user,
   householdId,
+  canEdit,
   records,
   memories,
   events,
@@ -262,16 +263,18 @@ export default function TimelinePage({
           </p>
         </div>
 
-        <button
-          type="button"
-          className="primary-button"
-          onClick={() => setFormOpen((current) => !current)}
-        >
-          🎉 イベントを追加
-        </button>
+        {canEdit && (
+          <button
+            type="button"
+            className="primary-button"
+            onClick={() => setFormOpen((current) => !current)}
+          >
+            🎉 イベントを追加
+          </button>
+        )}
       </section>
 
-      {formOpen && (
+      {canEdit && formOpen && (
         <section className="card timeline-event-form">
           <div className="section-heading">
             <div>
@@ -515,13 +518,15 @@ export default function TimelinePage({
                               <small>{icon} {label}</small>
                             </div>
 
-                            <button
-                              type="button"
-                              className="timeline-delete-event"
-                              onClick={() => deleteEvent(item)}
-                            >
-                              削除
-                            </button>
+                            {canEdit && (
+                              <button
+                                type="button"
+                                className="timeline-delete-event"
+                                onClick={() => deleteEvent(item)}
+                              >
+                                削除
+                              </button>
+                            )}
                           </div>
 
                           <h3>{item.title}</h3>

@@ -2869,3 +2869,81 @@ body.modal-open{
     min-width:0;
   }
 }
+
+
+/* Role permissions v2.1 */
+.invite-role-picker{
+  display:flex;
+  flex-wrap:wrap;
+  gap:9px;
+  margin:12px 0;
+}
+.invite-role-picker label{
+  display:flex;
+  align-items:center;
+  gap:7px;
+  padding:10px 12px;
+  margin:0;
+  border:1px solid var(--border);
+  border-radius:12px;
+  background:#faf8f5;
+  cursor:pointer;
+  font-weight:800;
+}
+.invite-role-picker input{
+  width:auto;
+  margin:0;
+}
+.member-privacy-note{
+  margin:0 0 10px;
+  color:var(--muted);
+  font-size:12px;
+  line-height:1.6;
+}
+.member-owner-actions{
+  display:flex;
+  align-items:center;
+  gap:7px;
+}
+.member-owner-actions select{
+  width:auto;
+  margin:0;
+  padding:7px 9px;
+  border:1px solid var(--border);
+  border-radius:9px;
+  background:#fff;
+}
+.member-owner-actions button{
+  padding:7px 9px;
+  border:0;
+  border-radius:9px;
+  background:#f4dede;
+  color:#a92828;
+  font-weight:800;
+}
+.memory-card-actions{
+  display:grid;
+  gap:8px;
+}
+.download-photo-button{
+  width:100%;
+  padding:10px 12px;
+  border:1px solid #b9cbbd;
+  border-radius:11px;
+  background:#edf5ef;
+  color:#3f6849;
+  font-weight:800;
+}
+@media(max-width:720px){
+  .household-member-item{
+    grid-template-columns:auto 1fr;
+  }
+  .member-owner-actions{
+    grid-column:1 / -1;
+    display:grid;
+    grid-template-columns:1fr auto;
+  }
+  .member-owner-actions select{
+    width:100%;
+  }
+}
