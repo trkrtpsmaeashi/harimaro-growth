@@ -107,6 +107,17 @@ export default function MonthlyReportPage({
 
   const hasData = monthRecords.length > 0 || monthMemories.length > 0;
 
+  function exportPdf() {
+    document.body.classList.add('printing-photobook');
+
+    requestAnimationFrame(() => {
+      window.print();
+      setTimeout(() => {
+        document.body.classList.remove('printing-photobook');
+      }, 300);
+    });
+  }
+
   return (
     <>
       <section className="page-heading report-heading">
@@ -118,7 +129,17 @@ export default function MonthlyReportPage({
           </p>
         </div>
 
-        <div className="report-month-controls">
+        <div className="report-heading-actions">
+          <button
+            type="button"
+            className="pdf-export-button"
+            onClick={exportPdf}
+            disabled={!hasData}
+          >
+            📕 PDFフォトブック
+          </button>
+
+          <div className="report-month-controls">
           <button
             type="button"
             onClick={() => setMonth((current) => shiftMonth(current, -1))}
@@ -140,6 +161,7 @@ export default function MonthlyReportPage({
           >
             ›
           </button>
+          </div>
         </div>
       </section>
 
@@ -316,6 +338,107 @@ export default function MonthlyReportPage({
         ) : (
           <p className="muted">この月の体重記録はありません。</p>
         )}
+      </section>
+
+
+      <section className="photobook-print" aria-hidden="true">
+        <article className="photobook-page photobook-cover">
+          <p>HARIMARO MEMORIES</p>
+          <h1>{monthLabel(month)}</h1>
+          <div className="photobook-cover-icon">🦔</div>
+          <h2>はりまろとの毎日</h2>
+          <small>作成日：{new Date().toLocaleDateString('ja-JP')}</small>
+        </article>
+
+        <article className="photobook-page photobook-summary-page">
+          <p className="photobook-kicker">MONTHLY SUMMARY</p>
+          <h2>{monthLabel(month)}のまとめ</h2>
+
+          <div className="photobook-summary-grid">
+            <div><strong>{monthRecords.length}</strong><span>体重記録</span></div>
+            <div><strong>{monthMemories.length}</strong><span>Memories</span></div>
+            <div><strong>{photoCount}</strong><span>写真</span></div>
+            <div><strong>{favoriteCount}</strong><span>お気に入り</span></div>
+          </div>
+
+          {firstRecord && lastRecord && (
+            <div className="photobook-growth-summary">
+              <h3>今月の成長</h3>
+              <p>
+                {firstRecord.weight_g}g
+                <span> → </span>
+                {lastRecord.weight_g}g
+              </p>
+              <strong>
+                {weightChange >= 0 ? '+' : ''}{weightChange}g
+              </strong>
+            </div>
+          )}
+
+          {tagStats.length > 0 && (
+            <div className="photobook-tags">
+              <h3>よく残したこと</h3>
+              <p>
+                {tagStats.map(([tag, count]) => `#${tag}（${count}回）`).join('　')}
+              </p>
+            </div>
+          )}
+        </article>
+
+        {monthMemories.flatMap((memory) =>
+          (memory.photos || []).map((photo, photoIndex) => (
+            <article
+              key={`book-${memory.id}-${photo.id}`}
+              className="photobook-page photobook-photo-page"
+            >
+              <header>
+                <span>{formatDate(memory.memory_date)}</span>
+                <strong>
+                  {photoIndex + 1} / {memory.photos.length}
+                </strong>
+              </header>
+
+              <img
+                src={photo.photo_url}
+                alt={memory.caption || 'はりまろの思い出'}
+              />
+
+              <div className="photobook-caption">
+                <p>{memory.caption || 'ひとことなし'}</p>
+                {memory.is_favorite && <strong>❤️ お気に入り</strong>}
+                {(memory.tags || []).length > 0 && (
+                  <small>
+                    {(memory.tags || []).map((tag) => `#${tag}`).join('　')}
+                  </small>
+                )}
+              </div>
+            </article>
+          ))
+        )}
+
+        {monthRecords.length > 0 && (
+          <article className="photobook-page photobook-record-page">
+            <p className="photobook-kicker">WEIGHT RECORD</p>
+            <h2>今月の体重記録</h2>
+
+            <div className="photobook-record-list">
+              {monthRecords.map((record) => (
+                <div key={`print-record-${record.id}`}>
+                  <span>{formatDate(record.recorded_on)}</span>
+                  <strong>{record.weight_g}g</strong>
+                  <p>{record.memo || 'メモなし'}</p>
+                </div>
+              ))}
+            </div>
+          </article>
+        )}
+
+        <article className="photobook-page photobook-end-page">
+          <div>🦔</div>
+          <h1>Harimaro Memories</h1>
+          <p>{monthLabel(month)}</p>
+          <small>END</small>
+        </article>
       </section>
     </>
   );

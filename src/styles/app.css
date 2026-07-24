@@ -2271,3 +2271,368 @@ body.modal-open{
     grid-column:auto;
   }
 }
+
+
+/* Notifications and reminders v1.6 */
+.notification-settings-card{
+  margin-top:16px;
+}
+.notification-note{
+  margin:0 0 16px;
+  color:var(--muted);
+  line-height:1.7;
+}
+.permission-pill{
+  padding:7px 10px;
+  border-radius:999px;
+  background:#eee9e3;
+  color:#675d55;
+  font-size:12px;
+  font-weight:800;
+}
+.permission-granted{
+  background:#e5f1e8;
+  color:#3e6848;
+}
+.permission-denied{
+  background:#f9e1e1;
+  color:#a02d2d;
+}
+.notification-setting-list{
+  display:grid;
+  gap:10px;
+}
+.notification-setting-item{
+  display:grid;
+  grid-template-columns:auto 1fr 145px;
+  align-items:center;
+  gap:13px;
+  padding:14px;
+  border:1px solid var(--border);
+  border-radius:15px;
+  background:#faf8f5;
+}
+.notification-setting-item > input[type="checkbox"]{
+  width:21px;
+  height:21px;
+  margin:0;
+}
+.notification-setting-item div strong,
+.notification-setting-item div span{
+  display:block;
+}
+.notification-setting-item div span{
+  margin-top:3px;
+  color:var(--muted);
+  font-size:12px;
+}
+.notification-setting-item input[type="time"],
+.notification-setting-item select{
+  width:100%;
+  margin:0;
+  padding:10px;
+  border:1px solid var(--border);
+  border-radius:11px;
+  background:#fff;
+  font:inherit;
+}
+.notification-summary{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:14px;
+}
+.notification-summary span{
+  padding:7px 10px;
+  border-radius:999px;
+  background:#f1ece6;
+  color:#645a52;
+  font-size:12px;
+  font-weight:800;
+}
+.notification-button-row{
+  margin-top:16px;
+}
+.home-reminder-stack{
+  display:grid;
+  gap:10px;
+  margin-bottom:16px;
+}
+.home-reminder-card{
+  display:grid;
+  grid-template-columns:auto 1fr auto;
+  align-items:center;
+  gap:15px;
+  padding:16px;
+  border:1px solid #dcc8ad;
+  border-radius:19px;
+  background:linear-gradient(135deg,#fffaf3,#f3eadf);
+}
+.home-reminder-card > span{
+  font-size:32px;
+}
+.home-reminder-card h3{
+  margin:3px 0 5px;
+}
+.home-reminder-card p{
+  margin:0;
+}
+.home-reminder-card button{
+  padding:10px 13px;
+  border:0;
+  border-radius:12px;
+  background:var(--brown);
+  color:#fff;
+  font-weight:800;
+}
+
+/* PDF photobook v1.6 */
+.report-heading-actions{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.pdf-export-button{
+  padding:11px 14px;
+  border:0;
+  border-radius:13px;
+  background:#765d4b;
+  color:#fff;
+  font-weight:800;
+}
+.pdf-export-button:disabled{
+  cursor:not-allowed;
+  opacity:.45;
+}
+.photobook-print{
+  display:none;
+}
+
+@media(max-width:720px){
+  .notification-setting-item{
+    grid-template-columns:auto 1fr;
+  }
+  .notification-setting-item > input[type="time"],
+  .notification-setting-item > select{
+    grid-column:2;
+  }
+  .home-reminder-card{
+    grid-template-columns:auto 1fr;
+  }
+  .home-reminder-card button{
+    grid-column:1 / -1;
+  }
+  .report-heading-actions{
+    width:100%;
+    align-items:stretch;
+    flex-direction:column;
+  }
+  .pdf-export-button{
+    width:100%;
+  }
+}
+
+@media print{
+  @page{
+    size:A4 portrait;
+    margin:0;
+  }
+
+  body.printing-photobook{
+    background:#fff!important;
+  }
+
+  body.printing-photobook .topbar,
+  body.printing-photobook .sidebar,
+  body.printing-photobook .sidebar-overlay,
+  body.printing-photobook .app-main > :not(.photobook-print){
+    display:none!important;
+  }
+
+  body.printing-photobook .app-main{
+    width:auto!important;
+    max-width:none!important;
+    margin:0!important;
+    padding:0!important;
+  }
+
+  body.printing-photobook .photobook-print{
+    display:block!important;
+  }
+
+  .photobook-page{
+    position:relative;
+    width:210mm;
+    min-height:297mm;
+    box-sizing:border-box;
+    padding:18mm;
+    overflow:hidden;
+    page-break-after:always;
+    break-after:page;
+    background:#fff;
+    color:#302a26;
+  }
+
+  .photobook-page:last-child{
+    page-break-after:auto;
+  }
+
+  .photobook-cover,
+  .photobook-end-page{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    background:
+      radial-gradient(circle at top right,#dfe8df,transparent 38%),
+      linear-gradient(145deg,#fff,#eee5da);
+  }
+
+  .photobook-cover > p,
+  .photobook-kicker{
+    color:#718b78;
+    font-size:12pt;
+    font-weight:900;
+    letter-spacing:.2em;
+  }
+
+  .photobook-cover h1{
+    margin:10mm 0 3mm;
+    font-size:34pt;
+  }
+
+  .photobook-cover-icon{
+    margin:15mm 0;
+    font-size:74pt;
+  }
+
+  .photobook-cover h2{
+    font-size:21pt;
+  }
+
+  .photobook-cover small{
+    position:absolute;
+    bottom:16mm;
+  }
+
+  .photobook-summary-page h2,
+  .photobook-record-page h2{
+    margin:4mm 0 12mm;
+    font-size:27pt;
+  }
+
+  .photobook-summary-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:5mm;
+  }
+
+  .photobook-summary-grid div{
+    padding:10mm;
+    border:1px solid #d9cec2;
+    border-radius:5mm;
+    text-align:center;
+  }
+
+  .photobook-summary-grid strong,
+  .photobook-summary-grid span{
+    display:block;
+  }
+
+  .photobook-summary-grid strong{
+    font-size:30pt;
+  }
+
+  .photobook-growth-summary,
+  .photobook-tags{
+    margin-top:12mm;
+    padding:8mm;
+    border-radius:5mm;
+    background:#f6f1eb;
+  }
+
+  .photobook-growth-summary p{
+    font-size:24pt;
+  }
+
+  .photobook-growth-summary > strong{
+    color:#718b78;
+    font-size:28pt;
+  }
+
+  .photobook-photo-page{
+    display:flex;
+    flex-direction:column;
+  }
+
+  .photobook-photo-page header{
+    display:flex;
+    justify-content:space-between;
+    margin-bottom:7mm;
+    font-size:12pt;
+  }
+
+  .photobook-photo-page > img{
+    width:100%;
+    max-height:205mm;
+    object-fit:contain;
+    border-radius:5mm;
+    background:#f0ece7;
+  }
+
+  .photobook-caption{
+    margin-top:8mm;
+  }
+
+  .photobook-caption p{
+    margin:0 0 3mm;
+    font-size:17pt;
+    line-height:1.6;
+  }
+
+  .photobook-caption strong,
+  .photobook-caption small{
+    display:block;
+    margin-top:2mm;
+  }
+
+  .photobook-record-list{
+    display:grid;
+    gap:4mm;
+  }
+
+  .photobook-record-list div{
+    display:grid;
+    grid-template-columns:35mm 30mm 1fr;
+    gap:5mm;
+    padding:5mm;
+    border-bottom:1px solid #ddd2c8;
+  }
+
+  .photobook-record-list strong{
+    font-size:17pt;
+  }
+
+  .photobook-record-list p{
+    margin:0;
+  }
+
+  .photobook-end-page div{
+    font-size:72pt;
+  }
+
+  .photobook-end-page h1{
+    margin:8mm 0 3mm;
+    font-size:30pt;
+  }
+
+  .photobook-end-page p{
+    font-size:19pt;
+  }
+
+  .photobook-end-page small{
+    margin-top:20mm;
+    letter-spacing:.3em;
+  }
+}

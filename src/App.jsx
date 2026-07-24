@@ -16,6 +16,10 @@ import CalendarPage from './pages/CalendarPage';
 import MonthlyReportPage from './pages/MonthlyReportPage';
 import SlideshowPage from './pages/SlideshowPage';
 import TimelinePage from './pages/TimelinePage';
+import {
+  loadNotificationSettings,
+  saveNotificationSettings,
+} from './lib/notificationSettings';
 
 export default function App() {
   const [user, setUser] = useState(null);
@@ -27,6 +31,9 @@ export default function App() {
   const [photoUrl, setPhotoUrl] = useState('');
   const [detailPost, setDetailPost] = useState(null);
   const [detailIndex, setDetailIndex] = useState(0);
+  const [notificationSettings, setNotificationSettings] = useState(
+    loadNotificationSettings
+  );
 
   async function loadRecords() {
     const { data, error } = await supabase
@@ -96,6 +103,11 @@ export default function App() {
 
   async function loadAll() {
     await Promise.all([loadRecords(), loadMemories(), loadEvents()]);
+  }
+
+  function updateNotificationSettings(nextSettings) {
+    setNotificationSettings(nextSettings);
+    saveNotificationSettings(nextSettings);
   }
 
   async function deleteRecord(id, photoPath) {
@@ -212,13 +224,21 @@ export default function App() {
       />
     );
   } else if (page === 'settings') {
-    content = <SettingsPage email={user.email} count={records.length} />;
+    content = (
+      <SettingsPage
+        email={user.email}
+        count={records.length}
+        notificationSettings={notificationSettings}
+        onChangeNotificationSettings={updateNotificationSettings}
+      />
+    );
   } else {
     content = (
       <HomePage
         records={records}
         memories={memories}
         onNavigate={setPage}
+        notificationSettings={notificationSettings}
         onPhoto={setPhotoUrl}
         onDelete={deleteRecord}
         onOpenMemory={(post, index) => {
