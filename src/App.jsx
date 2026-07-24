@@ -123,9 +123,14 @@ export default function App() {
     content = (
       <HomePage
         records={records}
+        memories={memories}
         onNavigate={setPage}
         onPhoto={setPhotoUrl}
         onDelete={deleteRecord}
+        onOpenMemory={(post, index) => {
+          setDetailPost(post);
+          setDetailIndex(index);
+        }}
       />
     );
   }
