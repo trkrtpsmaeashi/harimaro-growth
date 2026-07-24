@@ -117,7 +117,18 @@ export default function App() {
   } else if (page === 'photos') {
     content = <PhotosPage records={records} onPhoto={setPhotoUrl} />;
   } else if (page === 'tags') {
-    content = <TagsPage records={records} onPhoto={setPhotoUrl} onDelete={deleteRecord} />;
+    content = (
+      <TagsPage
+        records={records}
+        memories={memories}
+        onPhoto={setPhotoUrl}
+        onDelete={deleteRecord}
+        onOpenMemory={(post, index) => {
+          setDetailPost(post);
+          setDetailIndex(index);
+        }}
+      />
+    );
   } else if (page === 'calendar') {
     content = (
       <CalendarPage
