@@ -1,0 +1,66 @@
+Harimaro Memories 完全版
+
+【正しいアップロード方法】
+
+1. このZIPを解凍します。
+2. 解凍した「Harimaro_Memories_complete」フォルダを開きます。
+3. フォルダの中にある以下をすべて選択します。
+
+   src
+   index.html
+   package.json
+   vite.config.js
+   vercel.json
+   .env.example
+   .gitignore
+   README.txt
+
+4. GitHubの harimaro-growth リポジトリのトップ画面で
+   Add file → Upload files
+   を開きます。
+
+5. 3で選択した「中身」をドラッグします。
+   フォルダそのものをドラッグしないでください。
+
+【正しいGitHub構成】
+
+harimaro-growth
+├─ src
+│  ├─ components
+│  ├─ lib
+│  ├─ pages
+│  ├─ styles
+│  ├─ App.jsx
+│  └─ main.jsx
+├─ supabase
+├─ index.html
+├─ package.json
+├─ vite.config.js
+└─ vercel.json
+
+【今ある余計なファイル】
+
+現在の src フォルダ内にある
+
+src/src
+main.js
+style.css
+
+は古い構成です。
+
+完全版アップロード後に、次を削除してください。
+
+src/src
+src/main.js
+src/style.css
+
+最終的に src の直下には
+
+components
+lib
+pages
+styles
+App.jsx
+main.jsx
+
+だけがあればOKです。
