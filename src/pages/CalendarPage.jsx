@@ -38,6 +38,7 @@ function getCalendarCells(year, monthIndex) {
 export default function CalendarPage({
   records,
   memories,
+  events,
   onOpenMemory,
   onPhoto,
 }) {
@@ -68,12 +69,24 @@ export default function CalendarPage({
     }, {});
   }, [memories]);
 
+  const eventsByDate = useMemo(() => {
+    return events.reduce((map, event) => {
+      if (!map[event.event_date]) map[event.event_date] = [];
+      map[event.event_date].push(event);
+      return map;
+    }, {});
+  }, [events]);
+
   const selectedRecords = selectedDate
     ? recordsByDate[selectedDate] || []
     : [];
 
   const selectedMemories = selectedDate
     ? memoriesByDate[selectedDate] || []
+    : [];
+
+  const selectedEvents = selectedDate
+    ? eventsByDate[selectedDate] || []
     : [];
 
   const monthRecordCount = records.filter(
@@ -88,6 +101,10 @@ export default function CalendarPage({
     .filter((memory) => memory.memory_date?.startsWith(currentMonthKey))
     .reduce((total, memory) => total + (memory.photos?.length || 0), 0);
 
+  const monthEventCount = events.filter(
+    (event) => event.event_date?.startsWith(currentMonthKey)
+  ).length;
+
   function moveMonth(amount) {
     const next = new Date(year, monthIndex + amount, 1);
     setYear(next.getFullYear());
@@ -100,6 +117,21 @@ export default function CalendarPage({
     setYear(today.getFullYear());
     setMonthIndex(today.getMonth());
     setSelectedDate(today.toISOString().slice(0, 10));
+  }
+
+
+  function eventIcon(type) {
+    const icons = {
+      welcome: '🏠',
+      birthday: '🎂',
+      hospital: '🏥',
+      nails: '✂️',
+      first: '🌟',
+      food: '🐛',
+      other: '🎉',
+    };
+
+    return icons[type] || '🎉';
   }
 
   return (
@@ -127,6 +159,12 @@ export default function CalendarPage({
           <span>🖼️</span>
           <strong>{monthPhotoCount}枚</strong>
           <small>今月の写真</small>
+        </article>
+
+        <article>
+          <span>🎉</span>
+          <strong>{monthEventCount}件</strong>
+          <small>今月のイベント</small>
         </article>
       </section>
 
@@ -170,6 +208,7 @@ export default function CalendarPage({
             const key = dateKey(year, monthIndex, day);
             const dayRecords = recordsByDate[key] || [];
             const dayMemories = memoriesByDate[key] || [];
+            const dayEvents = eventsByDate[key] || [];
             const isSelected = selectedDate === key;
             const isToday = key === new Date().toISOString().slice(0, 10);
 
@@ -200,18 +239,31 @@ export default function CalendarPage({
                       )}
                     </span>
                   )}
+
+                  {dayEvents.length > 0 && (
+                    <span title={`${dayEvents.length}件のイベント`}>
+                      {eventIcon(dayEvents[0].event_type)}
+                      {dayEvents.length > 1 && (
+                        <small>{dayEvents.length}</small>
+                      )}
+                    </span>
+                  )}
                 </span>
 
                 {(dayMemories[0]?.photos?.[0]?.photo_url ||
+                  dayEvents.find((event) => event.photos?.[0]?.photo_url)?.photos?.[0]?.photo_url ||
                   dayRecords.find((record) => record.photo_url)?.photo_url) && (
                   <img
                     className={`calendar-day-thumb ${
                       dayMemories[0]?.photos?.[0]?.photo_url
                         ? 'memory-background'
+                        : dayEvents.find((event) => event.photos?.[0]?.photo_url)
+                        ? 'event-background'
                         : 'record-background'
                     }`}
                     src={
                       dayMemories[0]?.photos?.[0]?.photo_url ||
+                      dayEvents.find((event) => event.photos?.[0]?.photo_url)?.photos?.[0]?.photo_url ||
                       dayRecords.find((record) => record.photo_url)?.photo_url
                     }
                     alt=""
@@ -240,9 +292,11 @@ export default function CalendarPage({
             </button>
           </div>
 
-          {!selectedRecords.length && !selectedMemories.length && (
-            <p className="muted">この日の記録はまだありません。</p>
-          )}
+          {!selectedRecords.length &&
+            !selectedMemories.length &&
+            !selectedEvents.length && (
+              <p className="muted">この日の記録はまだありません。</p>
+            )}
 
           {selectedRecords.length > 0 && (
             <div className="calendar-detail-section">
@@ -307,6 +361,40 @@ export default function CalendarPage({
                       <p>{memory.caption || 'ひとことなし'}</p>
                     </div>
                   </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {selectedEvents.length > 0 && (
+            <div className="calendar-detail-section">
+              <h3>🎉 イベント</h3>
+
+              <div className="calendar-event-list">
+                {selectedEvents.map((event) => (
+                  <article key={event.id} className="calendar-event-item">
+                    <div className="calendar-event-title">
+                      <span>{eventIcon(event.event_type)}</span>
+                      <div>
+                        <strong>{event.title}</strong>
+                        <p>{event.note || '内容なし'}</p>
+                      </div>
+                    </div>
+
+                    {(event.photos || []).length > 0 && (
+                      <div className="calendar-event-photos">
+                        {event.photos.map((photo) => (
+                          <button
+                            type="button"
+                            key={photo.id}
+                            onClick={() => onPhoto(photo.photo_url)}
+                          >
+                            <img src={photo.photo_url} alt={event.title} />
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </article>
                 ))}
               </div>
             </div>

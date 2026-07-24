@@ -166,6 +166,7 @@ export default function App() {
       <CalendarPage
         records={records}
         memories={memories}
+        events={events}
         onPhoto={setPhotoUrl}
         onOpenMemory={(post, index) => {
           setDetailPost(post);
