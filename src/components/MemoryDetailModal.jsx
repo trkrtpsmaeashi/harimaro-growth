@@ -17,10 +17,23 @@ export default function MemoryDetailModal({
   }, [post?.id, initialIndex]);
 
   useEffect(() => {
+    if (!post) {
+      document.body.classList.remove('modal-open');
+      return undefined;
+    }
+
     function handleKey(event) {
       if (event.key === 'Escape') onClose();
-      if (event.key === 'ArrowLeft') previous();
-      if (event.key === 'ArrowRight') next();
+      if (event.key === 'ArrowLeft') {
+        setIndex((current) =>
+          current === 0 ? Math.max(photos.length - 1, 0) : current - 1
+        );
+      }
+      if (event.key === 'ArrowRight') {
+        setIndex((current) =>
+          current >= photos.length - 1 ? 0 : current + 1
+        );
+      }
     }
 
     window.addEventListener('keydown', handleKey);
@@ -30,7 +43,7 @@ export default function MemoryDetailModal({
       window.removeEventListener('keydown', handleKey);
       document.body.classList.remove('modal-open');
     };
-  });
+  }, [post, photos.length, onClose]);
 
   if (!post) return null;
 
