@@ -13,6 +13,7 @@ function monthLabel(dateText) {
 
 export default function MemoriesPage({
   user,
+  householdId,
   memories,
   onReload,
   onOpenDetail,
@@ -101,6 +102,8 @@ export default function MemoriesPage({
       .from('harimaro_memory_posts')
       .insert({
         user_id: user.id,
+        household_id: householdId,
+        created_by: user.id,
         memory_date: date,
         caption: caption.trim(),
         tags: parsedTags,
@@ -186,7 +189,8 @@ export default function MemoriesPage({
     const { error } = await supabase
       .from('harimaro_memory_posts')
       .update({ is_favorite: !post.is_favorite })
-      .eq('id', post.id);
+      .eq('id', post.id)
+      .eq('household_id', householdId);
 
     if (error) {
       alert(error.message);
@@ -212,7 +216,8 @@ export default function MemoriesPage({
     const { error } = await supabase
       .from('harimaro_memory_posts')
       .delete()
-      .eq('id', post.id);
+      .eq('id', post.id)
+      .eq('household_id', householdId);
 
     if (error) {
       alert(error.message);

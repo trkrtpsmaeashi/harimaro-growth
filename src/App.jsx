@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from './lib/supabase';
+import { ensureHousehold, loadHouseholdSummary } from './lib/household';
 import Layout from './components/Layout';
 import PhotoModal from './components/PhotoModal';
 import MemoryDetailModal from './components/MemoryDetailModal';
@@ -24,6 +25,7 @@ import {
 export default function App() {
   const [user, setUser] = useState(null);
   const [records, setRecords] = useState([]);
+  const [household, setHousehold] = useState(null);
   const [memories, setMemories] = useState([]);
   const [events, setEvents] = useState([]);
   const [page, setPage] = useState('home');
@@ -35,10 +37,13 @@ export default function App() {
     loadNotificationSettings
   );
 
-  async function loadRecords() {
+  async function loadRecords(householdId = household?.household_id) {
+    if (!householdId) return;
+
     const { data, error } = await supabase
       .from('hedgehog_records')
       .select('*')
+      .eq('household_id', householdId)
       .order('recorded_on', { ascending: false })
       .order('created_at', { ascending: false });
 
@@ -46,7 +51,9 @@ export default function App() {
     setRecords(data || []);
   }
 
-  async function loadMemories() {
+  async function loadMemories(householdId = household?.household_id) {
+    if (!householdId) return;
+
     const { data, error } = await supabase
       .from('harimaro_memory_posts')
       .select(`
@@ -58,6 +65,7 @@ export default function App() {
           sort_order
         )
       `)
+      .eq('household_id', householdId)
       .order('memory_date', { ascending: false })
       .order('created_at', { ascending: false });
 
@@ -74,7 +82,9 @@ export default function App() {
   }
 
 
-  async function loadEvents() {
+  async function loadEvents(householdId = household?.household_id) {
+    if (!householdId) return;
+
     const { data, error } = await supabase
       .from('harimaro_events')
       .select(`
@@ -86,6 +96,7 @@ export default function App() {
           sort_order
         )
       `)
+      .eq('household_id', householdId)
       .order('event_date', { ascending: false })
       .order('created_at', { ascending: false });
 
@@ -102,7 +113,25 @@ export default function App() {
   }
 
   async function loadAll() {
-    await Promise.all([loadRecords(), loadMemories(), loadEvents()]);
+    const summary = await ensureHousehold();
+    setHousehold(summary);
+
+    await Promise.all([
+      loadRecords(summary.household_id),
+      loadMemories(summary.household_id),
+      loadEvents(summary.household_id),
+    ]);
+  }
+
+  async function refreshHousehold() {
+    const summary = await loadHouseholdSummary();
+    setHousehold(summary);
+
+    await Promise.all([
+      loadRecords(summary.household_id),
+      loadMemories(summary.household_id),
+      loadEvents(summary.household_id),
+    ]);
   }
 
   function updateNotificationSettings(nextSettings) {
@@ -129,12 +158,25 @@ export default function App() {
 
   if (!user) return <LoginPage />;
 
+  if (!household) {
+    return (
+      <main className="auth-page">
+        <section className="auth-card">
+          <div className="auth-logo">🦔</div>
+          <h1>Harimaro Memories</h1>
+          <p>共有データを準備しています…</p>
+        </section>
+      </main>
+    );
+  }
+
   let content;
 
   if (page === 'new') {
     content = (
       <NewRecordPage
         user={user}
+        householdId={household?.household_id}
         onSaved={async () => {
           await loadRecords();
           setPage('home');
@@ -148,6 +190,7 @@ export default function App() {
     content = (
       <MemoriesPage
         user={user}
+        householdId={household?.household_id}
         memories={memories}
         onReload={loadMemories}
         onOpenDetail={(post, index) => {
@@ -212,6 +255,7 @@ export default function App() {
     content = (
       <TimelinePage
         user={user}
+        householdId={household?.household_id}
         records={records}
         memories={memories}
         events={events}
@@ -230,6 +274,8 @@ export default function App() {
         count={records.length}
         notificationSettings={notificationSettings}
         onChangeNotificationSettings={updateNotificationSettings}
+        household={household}
+        onHouseholdChanged={refreshHousehold}
       />
     );
   } else {

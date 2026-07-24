@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { today } from '../lib/helpers';
 
-export default function NewRecordPage({ user, onSaved, onCancel }) {
+export default function NewRecordPage({ user, householdId, onSaved, onCancel }) {
   const [date, setDate] = useState(today());
   const [weight, setWeight] = useState('');
   const [memo, setMemo] = useState('');
@@ -34,6 +34,8 @@ export default function NewRecordPage({ user, onSaved, onCancel }) {
 
     const { error } = await supabase.from('hedgehog_records').insert({
       user_id: user.id,
+      household_id: householdId,
+      created_by: user.id,
       recorded_on: date,
       weight_g: Number(weight),
       memo: memo.trim(),

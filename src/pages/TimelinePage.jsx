@@ -28,6 +28,7 @@ function yearOf(item) {
 
 export default function TimelinePage({
   user,
+  householdId,
   records,
   memories,
   events,
@@ -145,6 +146,8 @@ export default function TimelinePage({
       .from('harimaro_events')
       .insert({
         user_id: user.id,
+        household_id: householdId,
+        created_by: user.id,
         event_date: eventDate,
         event_type: eventType,
         title: title.trim(),
@@ -230,7 +233,8 @@ export default function TimelinePage({
     const { error } = await supabase
       .from('harimaro_events')
       .delete()
-      .eq('id', event.id);
+      .eq('id', event.id)
+      .eq('household_id', householdId);
 
     if (error) {
       alert(error.message);

@@ -1,3 +1,9 @@
+import { useState } from 'react';
+import {
+  createInviteCode,
+  joinHousehold,
+  updateDisplayName,
+} from '../lib/household';
 import {
   canShowBrowserNotifications,
   requestNotificationPermission,
@@ -10,7 +16,15 @@ export default function SettingsPage({
   count,
   notificationSettings,
   onChangeNotificationSettings,
+  household,
+  onHouseholdChanged,
 }) {
+  const [inviteCode, setInviteCode] = useState('');
+  const [joinCode, setJoinCode] = useState('');
+  const [displayName, setDisplayName] = useState(
+    household?.my_display_name || ''
+  );
+  const [householdMessage, setHouseholdMessage] = useState('');
   const permission =
     canShowBrowserNotifications() ? Notification.permission : 'unsupported';
 
@@ -19,6 +33,56 @@ export default function SettingsPage({
       ...notificationSettings,
       [key]: value,
     });
+  }
+
+
+  async function generateInvite() {
+    setHouseholdMessage('招待コードを作成中…');
+
+    try {
+      const result = await createInviteCode();
+      setInviteCode(result.invite_code);
+      setHouseholdMessage('このコードを彼氏さんへ送ってね。');
+    } catch (error) {
+      setHouseholdMessage(error.message);
+    }
+  }
+
+  async function joinSharedHousehold() {
+    if (!joinCode.trim()) {
+      setHouseholdMessage('招待コードを入力してね。');
+      return;
+    }
+
+    if (!confirm('現在の自分用データから、招待された共有グループへ切り替える？')) {
+      return;
+    }
+
+    setHouseholdMessage('共有グループへ参加中…');
+
+    try {
+      await joinHousehold(joinCode);
+      setJoinCode('');
+      setHouseholdMessage('共有グループへ参加しました。');
+      await onHouseholdChanged();
+    } catch (error) {
+      setHouseholdMessage(error.message);
+    }
+  }
+
+  async function saveDisplayName() {
+    if (!displayName.trim()) {
+      setHouseholdMessage('表示名を入力してね。');
+      return;
+    }
+
+    try {
+      await updateDisplayName(displayName);
+      setHouseholdMessage('表示名を保存しました。');
+      await onHouseholdChanged();
+    } catch (error) {
+      setHouseholdMessage(error.message);
+    }
   }
 
   async function enableBrowserNotifications() {
@@ -57,6 +121,94 @@ export default function SettingsPage({
       <section className="card settings-list">
         <div><strong>ログイン中</strong><span>{email}</span></div>
         <div><strong>保存済み記録</strong><span>{count}件</span></div>
+      </section>
+
+
+      <section className="card household-settings-card">
+        <div className="section-heading">
+          <div>
+            <p className="eyebrow">SHARED HOME</p>
+            <h2>はりまろのおうち</h2>
+          </div>
+          <span className="member-count-pill">
+            👥 {household?.member_count || 1}人
+          </span>
+        </div>
+
+        <p className="notification-note">
+          招待コードを使うと、彼氏さんと同じ体重記録・Memories・イベントを共同で見たり追加したりできます。
+        </p>
+
+        <div className="household-name-box">
+          <span>共有グループ</span>
+          <strong>{household?.household_name || 'はりまろのおうち'}</strong>
+          <small>
+            あなたの役割：{household?.my_role === 'owner' ? 'オーナー' : 'メンバー'}
+          </small>
+        </div>
+
+        <div className="household-form-row">
+          <div>
+            <label>あなたの表示名</label>
+            <input
+              value={displayName}
+              placeholder="紗希"
+              onChange={(event) => setDisplayName(event.target.value)}
+            />
+          </div>
+          <button type="button" onClick={saveDisplayName}>
+            表示名を保存
+          </button>
+        </div>
+
+        {household?.my_role === 'owner' && (
+          <div className="invite-box">
+            <div>
+              <h3>彼氏さんを招待する</h3>
+              <p>招待コードは24時間だけ有効です。</p>
+            </div>
+
+            <button type="button" onClick={generateInvite}>
+              招待コードを発行
+            </button>
+
+            {inviteCode && (
+              <div className="invite-code-display">
+                <span>招待コード</span>
+                <strong>{inviteCode}</strong>
+                <button
+                  type="button"
+                  onClick={() => navigator.clipboard?.writeText(inviteCode)}
+                >
+                  コピー
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
+        <div className="join-box">
+          <h3>招待されたグループへ参加</h3>
+          <p>
+            彼氏さん側のアカウントで、受け取った6文字コードを入力します。
+          </p>
+
+          <div className="join-code-row">
+            <input
+              value={joinCode}
+              maxLength={6}
+              placeholder="ABC123"
+              onChange={(event) =>
+                setJoinCode(event.target.value.toUpperCase())
+              }
+            />
+            <button type="button" onClick={joinSharedHousehold}>
+              参加する
+            </button>
+          </div>
+        </div>
+
+        <p className="message">{householdMessage}</p>
       </section>
 
       <section className="card notification-settings-card">
