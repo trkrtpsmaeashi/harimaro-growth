@@ -202,10 +202,18 @@ export default function CalendarPage({
                   )}
                 </span>
 
-                {dayMemories[0]?.photos?.[0] && (
+                {(dayMemories[0]?.photos?.[0]?.photo_url ||
+                  dayRecords.find((record) => record.photo_url)?.photo_url) && (
                   <img
-                    className="calendar-day-thumb"
-                    src={dayMemories[0].photos[0].photo_url}
+                    className={`calendar-day-thumb ${
+                      dayMemories[0]?.photos?.[0]?.photo_url
+                        ? 'memory-background'
+                        : 'record-background'
+                    }`}
+                    src={
+                      dayMemories[0]?.photos?.[0]?.photo_url ||
+                      dayRecords.find((record) => record.photo_url)?.photo_url
+                    }
                     alt=""
                   />
                 )}

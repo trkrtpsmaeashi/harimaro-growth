@@ -989,3 +989,12 @@ body.modal-open{
     grid-template-columns:repeat(2,minmax(0,1fr));
   }
 }
+
+
+/* Calendar v1.0.1 record photo fallback */
+.calendar-day-thumb.record-background{
+  opacity:.16;
+}
+.calendar-day-thumb.memory-background{
+  opacity:.22;
+}
