@@ -2208,3 +2208,66 @@ body.modal-open{
     grid-template-columns:repeat(2,minmax(0,1fr));
   }
 }
+
+
+/* Home quick menu v1.5.2 */
+.quick-menu-cards{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:10px;
+}
+
+.quick-menu-cards button{
+  min-height:108px;
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  justify-content:center;
+  gap:8px;
+  padding:16px;
+  border:1px solid var(--border);
+  border-radius:17px;
+  background:#fff;
+  color:inherit;
+  text-align:left;
+}
+
+.quick-menu-cards button:hover{
+  border-color:#bca895;
+  background:#fcfaf7;
+  transform:translateY(-1px);
+}
+
+.quick-menu-cards button span{
+  font-size:27px;
+  line-height:1;
+}
+
+.quick-menu-cards button strong{
+  font-size:15px;
+  line-height:1.35;
+}
+
+.quick-menu-cards button:last-child{
+  grid-column:1 / -1;
+}
+
+@media(max-width:720px){
+  .quick-menu-cards{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+
+  .quick-menu-cards button{
+    min-height:96px;
+  }
+}
+
+@media(max-width:430px){
+  .quick-menu-cards{
+    grid-template-columns:1fr;
+  }
+
+  .quick-menu-cards button:last-child{
+    grid-column:auto;
+  }
+}

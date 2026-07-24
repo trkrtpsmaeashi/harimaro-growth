@@ -157,15 +157,31 @@ export default function HomePage({
         <article className="card">
           <p className="eyebrow">QUICK MENU</p>
           <h2>すぐ見る</h2>
-          <div className="quick-menu">
-            <button onClick={() => onNavigate('memories')}>📷 Memories</button>
-            <button onClick={() => onNavigate('chart')}>📈 成長グラフ</button>
-            <button onClick={() => onNavigate('records')}>📚 記録一覧</button>
-            <button onClick={() => onNavigate('calendar')}>📅 カレンダー</button>
-            <button onClick={() => onNavigate('report')}>📖 月間レポート</button>
-            <button onClick={() => onNavigate('timeline')}>📜 はりまろ年表</button>
-            <button onClick={() => onNavigate('slideshow')}>🎞️ スライドショー</button>
-            <button onClick={() => onNavigate('new')}>➕ 新しい記録</button>
+          <div className="quick-menu quick-menu-cards">
+            <button onClick={() => onNavigate('memories')}>
+              <span>📷</span>
+              <strong>Memories</strong>
+            </button>
+
+            <button onClick={() => onNavigate('chart')}>
+              <span>📈</span>
+              <strong>成長グラフ</strong>
+            </button>
+
+            <button onClick={() => onNavigate('calendar')}>
+              <span>📅</span>
+              <strong>カレンダー</strong>
+            </button>
+
+            <button onClick={() => onNavigate('report')}>
+              <span>📖</span>
+              <strong>月間レポート</strong>
+            </button>
+
+            <button onClick={() => onNavigate('timeline')}>
+              <span>📜</span>
+              <strong>はりまろ年表</strong>
+            </button>
           </div>
         </article>
       </section>
