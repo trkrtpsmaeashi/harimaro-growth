@@ -3,6 +3,7 @@ import {
   createInviteCode,
   joinHousehold,
   updateDisplayName,
+  loadHouseholdMembers,
 } from '../lib/household';
 import {
   canShowBrowserNotifications,
@@ -25,6 +26,7 @@ export default function SettingsPage({
     household?.my_display_name || ''
   );
   const [householdMessage, setHouseholdMessage] = useState('');
+  const [members, setMembers] = useState([]);
   const permission =
     canShowBrowserNotifications() ? Notification.permission : 'unsupported';
 
@@ -35,6 +37,15 @@ export default function SettingsPage({
     });
   }
 
+
+  async function refreshMembers() {
+    try {
+      const result = await loadHouseholdMembers();
+      setMembers(result);
+    } catch (error) {
+      setHouseholdMessage(error.message);
+    }
+  }
 
   async function generateInvite() {
     setHouseholdMessage('招待コードを作成中…');
@@ -65,6 +76,7 @@ export default function SettingsPage({
       setJoinCode('');
       setHouseholdMessage('共有グループへ参加しました。');
       await onHouseholdChanged();
+      await refreshMembers();
     } catch (error) {
       setHouseholdMessage(error.message);
     }
@@ -80,6 +92,7 @@ export default function SettingsPage({
       await updateDisplayName(displayName);
       setHouseholdMessage('表示名を保存しました。');
       await onHouseholdChanged();
+      await refreshMembers();
     } catch (error) {
       setHouseholdMessage(error.message);
     }
@@ -187,6 +200,36 @@ export default function SettingsPage({
           </div>
         )}
 
+
+        <div className="household-members-box">
+          <div className="household-members-heading">
+            <h3>参加メンバー</h3>
+            <button type="button" onClick={refreshMembers}>
+              メンバーを表示
+            </button>
+          </div>
+
+          {members.length > 0 ? (
+            <div className="household-member-list">
+              {members.map((member) => (
+                <div key={member.user_id} className="household-member-item">
+                  <span>👤</span>
+                  <div>
+                    <strong>{member.display_name || '名前未設定'}</strong>
+                    <small>
+                      {member.role === 'owner' ? 'オーナー' : 'メンバー'}
+                    </small>
+                  </div>
+                  {member.is_me && <em>あなた</em>}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="muted">
+              「メンバーを表示」を押すと参加者を確認できます。
+            </p>
+          )}
+        </div>
         <div className="join-box">
           <h3>招待されたグループへ参加</h3>
           <p>

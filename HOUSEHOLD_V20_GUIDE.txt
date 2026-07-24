@@ -1,0 +1,20 @@
+Harimaro Memories v2.0 共同利用版
+
+今回の主な修正:
+- gen_random_bytes()を使わない招待コード生成へ変更
+- v1.7のSQLを実行済みでも上書き修正可能
+- 6文字コード、24時間有効、1回限り
+- 参加メンバー一覧を設定画面で確認
+- 参加処理をより安全に再設計
+
+更新手順:
+1. ZIPを解凍してGitHubへ上書きアップロード
+2. Supabase SQL Editorで
+   supabase/household_sharing_v20.sql
+   を全文貼り付けてRun
+3. VercelがReadyになったら再読み込み
+4. 設定 → はりまろのおうち → 招待コードを発行
+
+重要:
+v1.7の巨大なSQLをもう一度実行する必要はありません。
+今回の household_sharing_v20.sql だけを実行してください。

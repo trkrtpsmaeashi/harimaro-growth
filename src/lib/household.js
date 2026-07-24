@@ -38,3 +38,11 @@ export async function updateDisplayName(displayName) {
   if (error) throw error;
   return data;
 }
+
+
+export async function loadHouseholdMembers() {
+  const { data, error } = await supabase.rpc('get_my_household_members');
+
+  if (error) throw error;
+  return data || [];
+}
