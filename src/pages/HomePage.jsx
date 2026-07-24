@@ -2,54 +2,6 @@ import { formatDate } from '../lib/helpers';
 import RecordCard from '../components/RecordCard';
 
 function Summary({ value, label }) {
-
-  const todayKey = new Date().toISOString().slice(0, 10);
-  const now = new Date();
-  const todayHasMemory = memories.some(
-    (memory) => memory.memory_date === todayKey
-  );
-  const todayHasRecord = records.some(
-    (record) => record.recorded_on === todayKey
-  );
-  const isMonthEnd =
-    new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate() === now.getDate();
-
-  const reminders = [];
-
-  if (notificationSettings?.dailyEnabled && !todayHasMemory) {
-    reminders.push({
-      icon: '📷',
-      title: '今日はまだMemoriesがありません',
-      text: '今日のはりまろを1枚残しておこう。',
-      action: 'memories',
-      button: '思い出を残す',
-    });
-  }
-
-  if (
-    notificationSettings?.weightEnabled &&
-    now.getDay() === Number(notificationSettings.weightWeekday) &&
-    !todayHasRecord
-  ) {
-    reminders.push({
-      icon: '⚖️',
-      title: '今日は体重測定の日です',
-      text: 'はりまろの体重と体調を記録しよう。',
-      action: 'new',
-      button: '体重を記録する',
-    });
-  }
-
-  if (notificationSettings?.monthlyEnabled && isMonthEnd) {
-    reminders.push({
-      icon: '📖',
-      title: '今月のレポートを確認しよう',
-      text: '今月の成長と思い出がまとまっています。',
-      action: 'report',
-      button: '月間レポートを見る',
-    });
-  }
-
   return (
     <article className="summary-card">
       <strong>{value}</strong>
@@ -111,6 +63,53 @@ export default function HomePage({
   const todayMemories = memories.filter(
     (memory) => getMonthDay(memory.memory_date) === todayMonthDay
   );
+
+  const todayKey = new Date().toISOString().slice(0, 10);
+  const now = new Date();
+  const todayHasMemory = memories.some(
+    (memory) => memory.memory_date === todayKey
+  );
+  const todayHasRecord = records.some(
+    (record) => record.recorded_on === todayKey
+  );
+  const isMonthEnd =
+    new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate() === now.getDate();
+
+  const reminders = [];
+
+  if (notificationSettings?.dailyEnabled && !todayHasMemory) {
+    reminders.push({
+      icon: '📷',
+      title: '今日はまだMemoriesがありません',
+      text: '今日のはりまろを1枚残しておこう。',
+      action: 'memories',
+      button: '思い出を残す',
+    });
+  }
+
+  if (
+    notificationSettings?.weightEnabled &&
+    now.getDay() === Number(notificationSettings.weightWeekday) &&
+    !todayHasRecord
+  ) {
+    reminders.push({
+      icon: '⚖️',
+      title: '今日は体重測定の日です',
+      text: 'はりまろの体重と体調を記録しよう。',
+      action: 'new',
+      button: '体重を記録する',
+    });
+  }
+
+  if (notificationSettings?.monthlyEnabled && isMonthEnd) {
+    reminders.push({
+      icon: '📖',
+      title: '今月のレポートを確認しよう',
+      text: '今月の成長と思い出がまとまっています。',
+      action: 'report',
+      button: '月間レポートを見る',
+    });
+  }
 
   return (
     <>
