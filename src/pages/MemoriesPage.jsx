@@ -25,6 +25,33 @@ export default function MemoriesPage({
   const [selectedTag, setSelectedTag] = useState('');
   const [favoritesOnly, setFavoritesOnly] = useState(false);
 
+  function addSelectedFiles(fileList) {
+    const incoming = Array.from(fileList || []);
+
+    setFiles((current) => {
+      const merged = [...current];
+
+      for (const file of incoming) {
+        const duplicate = merged.some(
+          (item) =>
+            item.name === file.name &&
+            item.size === file.size &&
+            item.lastModified === file.lastModified
+        );
+
+        if (!duplicate) merged.push(file);
+      }
+
+      return merged;
+    });
+  }
+
+  function removeSelectedFile(indexToRemove) {
+    setFiles((current) =>
+      current.filter((_, index) => index !== indexToRemove)
+    );
+  }
+
   const allTags = useMemo(
     () => [...new Set(memories.flatMap((memory) => memory.tags || []))]
       .sort((a, b) => a.localeCompare(b, 'ja')),
@@ -193,13 +220,43 @@ export default function MemoriesPage({
               type="file"
               accept="image/*"
               multiple
-              onChange={(event) => setFiles(Array.from(event.target.files || []))}
+              onChange={(event) => {
+                addSelectedFiles(event.target.files);
+                event.target.value = '';
+              }}
             />
             <p className="selected-files">
               {files.length
-                ? `${files.length}枚選択中`
-                : '複数枚まとめて選択できます'}
+                ? `${files.length}枚選択中。もう一度「ファイルを選択」を押すと追加できます。`
+                : '一度に複数枚、または1枚ずつ繰り返し追加できます。'}
             </p>
+
+            {files.length > 0 && (
+              <div className="selected-file-list">
+                {files.map((file, index) => (
+                  <div
+                    key={`${file.name}-${file.size}-${file.lastModified}`}
+                    className="selected-file-item"
+                  >
+                    <span>{index + 1}. {file.name}</span>
+                    <button
+                      type="button"
+                      onClick={() => removeSelectedFile(index)}
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+
+                <button
+                  type="button"
+                  className="clear-files-button"
+                  onClick={() => setFiles([])}
+                >
+                  選択をすべて解除
+                </button>
+              </div>
+            )}
           </div>
         </div>
 
