@@ -1,6 +1,14 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { formatDate, today } from '../lib/helpers';
+
+function monthLabel(dateText) {
+  if (!dateText) return '';
+  return new Intl.DateTimeFormat('ja-JP', {
+    year: 'numeric',
+    month: 'long',
+  }).format(new Date(`${dateText}T00:00:00`));
+}
 
 export default function MemoriesPage({
   user,
@@ -10,8 +18,43 @@ export default function MemoriesPage({
 }) {
   const [date, setDate] = useState(today());
   const [caption, setCaption] = useState('');
+  const [tags, setTags] = useState('');
   const [file, setFile] = useState(null);
   const [message, setMessage] = useState('');
+  const [searchText, setSearchText] = useState('');
+  const [selectedTag, setSelectedTag] = useState('');
+  const [favoritesOnly, setFavoritesOnly] = useState(false);
+
+  const allTags = useMemo(
+    () => [...new Set(memories.flatMap((memory) => memory.tags || []))]
+      .sort((a, b) => a.localeCompare(b, 'ja')),
+    [memories]
+  );
+
+  const filteredMemories = useMemo(() => {
+    const keyword = searchText.trim().toLowerCase();
+
+    return memories.filter((memory) => {
+      const captionMatch =
+        !keyword || (memory.caption || '').toLowerCase().includes(keyword);
+
+      const tagMatch =
+        !selectedTag || (memory.tags || []).includes(selectedTag);
+
+      const favoriteMatch = !favoritesOnly || memory.is_favorite;
+
+      return captionMatch && tagMatch && favoriteMatch;
+    });
+  }, [memories, searchText, selectedTag, favoritesOnly]);
+
+  const groupedMemories = useMemo(() => {
+    return filteredMemories.reduce((groups, memory) => {
+      const label = monthLabel(memory.memory_date);
+      if (!groups[label]) groups[label] = [];
+      groups[label].push(memory);
+      return groups;
+    }, {});
+  }, [filteredMemories]);
 
   async function saveMemory() {
     if (!date || !file) {
@@ -40,8 +83,13 @@ export default function MemoriesPage({
       user_id: user.id,
       memory_date: date,
       caption: caption.trim(),
+      tags: tags
+        .split(',')
+        .map((tag) => tag.trim())
+        .filter(Boolean),
       photo_url: photoUrl,
       photo_path: path,
+      is_favorite: false,
     });
 
     if (error) {
@@ -51,9 +99,24 @@ export default function MemoriesPage({
     }
 
     setCaption('');
+    setTags('');
     setFile(null);
     setMessage('保存しました。');
     document.querySelector('#memoryPhoto').value = '';
+    await onReload();
+  }
+
+  async function toggleFavorite(memory) {
+    const { error } = await supabase
+      .from('harimaro_memories')
+      .update({ is_favorite: !memory.is_favorite })
+      .eq('id', memory.id);
+
+    if (error) {
+      alert(error.message);
+      return;
+    }
+
     await onReload();
   }
 
@@ -84,7 +147,9 @@ export default function MemoriesPage({
       <section className="page-heading">
         <p className="eyebrow">MEMORIES</p>
         <h2>思い出を残す</h2>
-        <p className="muted">体重を測らない日も、写真だけ気軽に残せます。</p>
+        <p className="muted">
+          体重を測らない日も、写真だけ気軽に残せます。
+        </p>
       </section>
 
       <section className="card memory-form">
@@ -117,6 +182,13 @@ export default function MemoriesPage({
           onChange={(event) => setCaption(event.target.value)}
         />
 
+        <label>タグ（カンマ区切り・任意）</label>
+        <input
+          value={tags}
+          placeholder="寝顔, 部屋んぽ, ミルワーム"
+          onChange={(event) => setTags(event.target.value)}
+        />
+
         <div className="button-row">
           <button onClick={saveMemory}>📷 思い出を保存</button>
         </div>
@@ -129,36 +201,99 @@ export default function MemoriesPage({
           <p className="eyebrow">ALBUM</p>
           <h2>Memories</h2>
         </div>
-        <span className="count-pill">{memories.length}枚</span>
+        <span className="count-pill">
+          {filteredMemories.length} / {memories.length}枚
+        </span>
       </section>
 
-      <section className="memory-grid">
-        {memories.length ? (
-          memories.map((memory) => (
-            <article key={memory.id} className="memory-card">
-              <button
-                className="memory-photo"
-                onClick={() => onPhoto(memory.photo_url)}
-              >
-                <img src={memory.photo_url} alt="はりまろの思い出" />
-              </button>
+      <section className="card memory-tools">
+        <div className="memory-search">
+          <label>ひとこと検索</label>
+          <input
+            type="search"
+            value={searchText}
+            placeholder="爆睡、タオル、かわいい…"
+            onChange={(event) => setSearchText(event.target.value)}
+          />
+        </div>
 
-              <div className="memory-card-body">
-                <time>{formatDate(memory.memory_date)}</time>
-                <p>{memory.caption || 'ひとことなし'}</p>
-                <button
-                  className="delete-button"
-                  onClick={() => deleteMemory(memory)}
-                >
-                  削除
-                </button>
-              </div>
-            </article>
-          ))
-        ) : (
-          <p className="card muted">まだ思い出写真がありません。</p>
-        )}
+        <div className="memory-filter-row">
+          <button
+            className={`memory-filter-button ${selectedTag === '' ? 'active' : ''}`}
+            onClick={() => setSelectedTag('')}
+          >
+            すべて
+          </button>
+
+          {allTags.map((tag) => (
+            <button
+              key={tag}
+              className={`memory-filter-button ${selectedTag === tag ? 'active' : ''}`}
+              onClick={() => setSelectedTag(tag)}
+            >
+              {tag}
+            </button>
+          ))}
+
+          <button
+            className={`memory-filter-button favorite-filter ${favoritesOnly ? 'active' : ''}`}
+            onClick={() => setFavoritesOnly((current) => !current)}
+          >
+            ❤️ お気に入り
+          </button>
+        </div>
       </section>
+
+      {Object.keys(groupedMemories).length ? (
+        Object.entries(groupedMemories).map(([label, items]) => (
+          <section key={label} className="memory-month">
+            <h3>{label}</h3>
+
+            <div className="memory-grid">
+              {items.map((memory) => (
+                <article key={memory.id} className="memory-card">
+                  <div className="memory-photo-wrap">
+                    <button
+                      className="memory-photo"
+                      onClick={() => onPhoto(memory.photo_url)}
+                    >
+                      <img src={memory.photo_url} alt="はりまろの思い出" />
+                    </button>
+
+                    <button
+                      className={`favorite-button ${memory.is_favorite ? 'active' : ''}`}
+                      aria-label="お気に入り"
+                      onClick={() => toggleFavorite(memory)}
+                    >
+                      {memory.is_favorite ? '❤️' : '🤍'}
+                    </button>
+                  </div>
+
+                  <div className="memory-card-body">
+                    <time>{formatDate(memory.memory_date)}</time>
+                    <p>{memory.caption || 'ひとことなし'}</p>
+
+                    <div className="tag-list">
+                      {(memory.tags || []).map((tag) => (
+                        <span key={tag} className="tag">{tag}</span>
+                      ))}
+                    </div>
+
+                    <button
+                      className="delete-button memory-delete"
+                      onClick={() => deleteMemory(memory)}
+                    >
+                      削除
+                    </button>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </section>
+        ))
+      ) : (
+        <p className="card muted">条件に合う思い出写真がありません。</p>
+      )}
     </>
   );
 }

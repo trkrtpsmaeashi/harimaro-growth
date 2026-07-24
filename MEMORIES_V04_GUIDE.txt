@@ -1,0 +1,13 @@
+Harimaro Memories v0.4
+
+追加:
+- Memoriesのひとこと検索
+- タグ
+- お気に入り
+- 年月ごとのタイムライン表示
+- 写真カード改善
+
+作業:
+1. GitHubへこのフォルダの中身をアップロード
+2. Supabase SQL Editorで supabase/add_memories_v04.sql を全文実行
+3. VercelがReadyになったらアプリを更新

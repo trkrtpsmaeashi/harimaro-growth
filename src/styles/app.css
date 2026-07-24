@@ -113,3 +113,72 @@ input,textarea{width:100%;padding:13px;border:1px solid #dcd3c9;border-radius:13
     grid-template-columns:1fr;
   }
 }
+
+
+/* Memories v0.4 */
+.memory-tools{
+  display:grid;
+  gap:14px;
+}
+.memory-search label{
+  margin-top:0;
+}
+.memory-filter-row{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+}
+.memory-filter-button{
+  padding:8px 12px;
+  border:1px solid var(--border);
+  border-radius:999px;
+  background:#fff;
+  color:#5f574f;
+  font-weight:700;
+}
+.memory-filter-button.active{
+  border-color:var(--green);
+  background:var(--green);
+  color:#fff;
+}
+.favorite-filter.active{
+  border-color:#c96b78;
+  background:#c96b78;
+}
+.memory-month{
+  margin-top:25px;
+}
+.memory-month > h3{
+  margin:0 0 12px;
+  color:#5f574f;
+  font-size:20px;
+}
+.memory-photo-wrap{
+  position:relative;
+}
+.favorite-button{
+  position:absolute;
+  top:10px;
+  right:10px;
+  width:42px;
+  height:42px;
+  display:grid;
+  place-items:center;
+  padding:0;
+  border:0;
+  border-radius:50%;
+  background:rgba(255,255,255,.9);
+  font-size:20px;
+  box-shadow:0 4px 14px rgba(0,0,0,.16);
+}
+.favorite-button.active{
+  background:#fff2f3;
+}
+.memory-card-body .tag-list{
+  min-height:28px;
+  margin-bottom:10px;
+}
+.memory-delete{
+  width:100%;
+  margin-top:6px;
+}
