@@ -124,6 +124,7 @@ function appShell(content) {
 
       <nav class="sidebar-nav">
         ${menuButton('home', '🏠', 'ホーム')}
+        ${menuButton('new', '➕', '新しい記録')}
         ${menuButton('chart', '📈', '成長グラフ')}
         ${menuButton('photos', '📷', '写真アルバム')}
         ${menuButton('tags', '🏷️', 'タグ検索')}
@@ -218,6 +219,9 @@ function closePhotoModal() {
 
 function renderCurrentView() {
   switch (currentView) {
+    case 'new':
+      renderNewRecordView();
+      break;
     case 'chart':
       renderChartView();
       break;
@@ -242,16 +246,127 @@ function renderHomeView() {
     latest && previous ? latest.weight_g - previous.weight_g : null;
 
   appShell(`
+    <section class="dashboard-hero">
+      <div>
+        <p class="eyebrow">HARIMARO TODAY</p>
+        <h2>はりまろの今</h2>
+        <p class="dashboard-lead">
+          最新の体重と記録をひと目で確認できます。
+        </p>
+      </div>
+
+      <button id="quickAddButton" class="quick-add-button">
+        ➕ 今日の記録を書く
+      </button>
+    </section>
+
+    <section class="summary-grid">
+      ${summaryCard(latest ? `${latest.weight_g}g` : '-', '最新体重')}
+      ${summaryCard(
+        difference === null
+          ? '-'
+          : `${difference >= 0 ? '+' : ''}${difference}g`,
+        '前回比'
+      )}
+      ${summaryCard(
+        latest ? formatDate(latest.recorded_on) : '-',
+        '最終記録'
+      )}
+    </section>
+
+    <section class="dashboard-grid">
+      <article class="card latest-card">
+        <div class="section-title-row">
+          <div>
+            <p class="eyebrow">LATEST</p>
+            <h3>最新の記録</h3>
+          </div>
+        </div>
+
+        ${
+          latest
+            ? `
+              <div class="latest-record">
+                ${
+                  latest.photo_url
+                    ? `<button class="latest-photo" data-photo="${escapeHtml(latest.photo_url)}">
+                         <img src="${escapeHtml(latest.photo_url)}" alt="はりまろ">
+                       </button>`
+                    : '<div class="latest-photo latest-photo-placeholder">🐹</div>'
+                }
+
+                <div class="latest-record-body">
+                  <time>${escapeHtml(formatDate(latest.recorded_on))}</time>
+                  <strong>${latest.weight_g}g</strong>
+                  <p>${escapeHtml(latest.memo || 'メモなし')}</p>
+                  <div class="tag-list">
+                    ${(latest.tags || [])
+                      .map((tag) => `<span class="tag">${escapeHtml(tag)}</span>`)
+                      .join('')}
+                  </div>
+                </div>
+              </div>
+            `
+            : '<p class="empty-message">まだ記録がありません。</p>'
+        }
+      </article>
+
+      <article class="card quick-menu-card">
+        <p class="eyebrow">QUICK MENU</p>
+        <h3>すぐ見る</h3>
+
+        <div class="quick-menu-grid">
+          <button data-quick-view="chart">📈 成長グラフ</button>
+          <button data-quick-view="photos">📷 写真アルバム</button>
+          <button data-quick-view="tags">🏷️ タグ検索</button>
+          <button data-quick-view="new">➕ 新しい記録</button>
+        </div>
+      </article>
+    </section>
+
+    <section class="card">
+      <div class="section-title-row">
+        <div>
+          <p class="eyebrow">RECENT</p>
+          <h3>最近の記録</h3>
+        </div>
+      </div>
+
+      <div class="timeline">
+        ${renderRecordCards(records.slice(0, 5))}
+      </div>
+    </section>
+  `);
+
+  document.querySelector('#quickAddButton').onclick = () => {
+    currentView = 'new';
+    renderCurrentView();
+  };
+
+  document.querySelectorAll('[data-quick-view]').forEach((button) => {
+    button.onclick = () => {
+      currentView = button.dataset.quickView;
+      renderCurrentView();
+    };
+  });
+
+  document.querySelectorAll('[data-photo]').forEach((button) => {
+    button.onclick = () => openPhotoModal(button.dataset.photo);
+  });
+
+  bindRecordButtons();
+}
+
+function renderNewRecordView() {
+  appShell(`
     <section class="page-heading">
       <div>
-        <p class="eyebrow">HOME</p>
-        <h2>今日の記録</h2>
+        <p class="eyebrow">NEW RECORD</p>
+        <h2>新しい記録</h2>
       </div>
     </section>
 
     <section class="card record-form-card">
-      <h3>新しい記録</h3>
-
       <div class="form-grid">
         <div>
           <label for="recordDate">日付</label>
@@ -281,38 +396,18 @@ function renderHomeView() {
 
       <div class="button-row">
         <button id="saveRecordButton">保存する</button>
+        <button id="cancelRecordButton" class="secondary-button">ホームへ戻る</button>
       </div>
 
       <p id="formMessage" class="message"></p>
     </section>
-
-    <section class="summary-grid">
-      ${summaryCard(latest ? `${latest.weight_g}g` : '-', '最新体重')}
-      ${summaryCard(
-        difference === null
-          ? '-'
-          : `${difference >= 0 ? '+' : ''}${difference}g`,
-        '前回比'
-      )}
-      ${summaryCard(String(records.length), '記録件数')}
-    </section>
-
-    <section class="card">
-      <div class="section-title-row">
-        <div>
-          <p class="eyebrow">TIMELINE</p>
-          <h3>記録一覧</h3>
-        </div>
-      </div>
-
-      <div class="timeline">
-        ${renderRecordCards(records)}
-      </div>
-    </section>
   `);
 
   document.querySelector('#saveRecordButton').onclick = saveRecord;
-  bindRecordButtons();
+  document.querySelector('#cancelRecordButton').onclick = () => {
+    currentView = 'home';
+    renderCurrentView();
+  };
 }
 
 function summaryCard(value, label) {
@@ -682,6 +777,7 @@ async function saveRecord() {
   }
 
   await loadRecords();
+  currentView = 'home';
   renderHomeView();
 }
 
