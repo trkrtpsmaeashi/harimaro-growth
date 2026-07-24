@@ -1,4 +1,11 @@
-import { formatDate } from '../lib/helpers';
+import {
+  currentMonth,
+  formatDate,
+  isJapanMonthEnd,
+  japanWeekday,
+  today,
+  todayMonthDay,
+} from '../lib/helpers';
 import RecordCard from '../components/RecordCard';
 import { getMediaType, getMediaUrl } from '../lib/media';
 import MemoryMedia from '../components/MemoryMedia';
@@ -23,6 +30,8 @@ function getMonthDay(dateText) {
 export default function HomePage({
   records,
   memories,
+  checkItems,
+  checkLogs,
   onNavigate,
   onPhoto,
   onDelete,
@@ -38,9 +47,9 @@ export default function HomePage({
     ? latest.weight_g - previous.weight_g
     : null;
 
-  const currentMonth = new Date().toISOString().slice(0, 7);
+  const currentMonthKey = currentMonth();
   const currentMonthMemories = memories.filter(
-    (memory) => getMonthKey(memory.memory_date) === currentMonth
+    (memory) => getMonthKey(memory.memory_date) === currentMonthKey
   );
 
   const currentMonthPhotoCount = currentMonthMemories.reduce(
@@ -62,21 +71,34 @@ export default function HomePage({
   const topTag = Object.entries(tagCounts)
     .sort((a, b) => b[1] - a[1])[0];
 
-  const todayMonthDay = new Date().toISOString().slice(5, 10);
+  const currentMonthDay = todayMonthDay();
   const todayMemories = memories.filter(
-    (memory) => getMonthDay(memory.memory_date) === todayMonthDay
+    (memory) => getMonthDay(memory.memory_date) === currentMonthDay
   );
 
-  const todayKey = new Date().toISOString().slice(0, 10);
-  const now = new Date();
+  const todayKey = today();
   const todayHasMemory = memories.some(
     (memory) => memory.memory_date === todayKey
   );
   const todayHasRecord = records.some(
     (record) => record.recorded_on === todayKey
   );
-  const isMonthEnd =
-    new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate() === now.getDate();
+  const isMonthEnd = isJapanMonthEnd();
+
+  const activeCheckItems = (checkItems || []).filter(
+    (item) => item.is_active !== false
+  );
+  const todayCheckedIds = new Set(
+    (checkLogs || [])
+      .filter((log) => log.check_date === todayKey)
+      .map((log) => log.item_id)
+  );
+  const todayCheckCount = activeCheckItems.filter((item) =>
+    todayCheckedIds.has(item.id)
+  ).length;
+  const todayCheckPercent = activeCheckItems.length
+    ? Math.round((todayCheckCount / activeCheckItems.length) * 100)
+    : 0;
 
   const reminders = [];
 
@@ -92,7 +114,7 @@ export default function HomePage({
 
   if (
     notificationSettings?.weightEnabled &&
-    now.getDay() === Number(notificationSettings.weightWeekday) &&
+    japanWeekday() === Number(notificationSettings.weightWeekday) &&
     !todayHasRecord
   ) {
     reminders.push({
@@ -140,6 +162,30 @@ export default function HomePage({
           ))}
         </section>
       )}
+
+      <section className="home-checklist-card">
+        <div className="home-checklist-main">
+          <span>☑️</span>
+          <div>
+            <p className="eyebrow">DAILY CHECK</p>
+            <h2>今日のお世話チェック</h2>
+            <p>
+              {activeCheckItems.length
+                ? `${todayCheckCount}/${activeCheckItems.length}項目を確認済み`
+                : '毎日確認したい項目を自由に作れます。'}
+            </p>
+          </div>
+        </div>
+
+        <div className="home-checklist-progress">
+          <strong>{todayCheckPercent}%</strong>
+          <div><span style={{ width: `${todayCheckPercent}%` }} /></div>
+        </div>
+
+        <button type="button" onClick={() => onNavigate('checklist')}>
+          チェックする →
+        </button>
+      </section>
 
       <section className="dashboard-hero dashboard-hero-v09">
         <div>

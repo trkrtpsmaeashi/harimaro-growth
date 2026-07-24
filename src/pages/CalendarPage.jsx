@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { formatDate } from '../lib/helpers';
+import { formatDate, getJapanDateParts, today } from '../lib/helpers';
 import { getMediaType, getMediaUrl } from '../lib/media';
 import MemoryMedia from '../components/MemoryMedia';
 
@@ -41,12 +41,14 @@ export default function CalendarPage({
   records,
   memories,
   events,
+  checkItems,
+  checkLogs,
   onOpenMemory,
   onPhoto,
 }) {
-  const now = new Date();
-  const [year, setYear] = useState(now.getFullYear());
-  const [monthIndex, setMonthIndex] = useState(now.getMonth());
+  const japanNow = getJapanDateParts();
+  const [year, setYear] = useState(japanNow.year);
+  const [monthIndex, setMonthIndex] = useState(japanNow.month - 1);
   const [selectedDate, setSelectedDate] = useState('');
 
   const currentMonthKey = monthKey(year, monthIndex);
@@ -78,6 +80,19 @@ export default function CalendarPage({
       return map;
     }, {});
   }, [events]);
+
+  const activeCheckItems = useMemo(
+    () => (checkItems || []).filter((item) => item.is_active !== false),
+    [checkItems]
+  );
+
+  const checksByDate = useMemo(() => {
+    return (checkLogs || []).reduce((map, log) => {
+      if (!map[log.check_date]) map[log.check_date] = new Set();
+      map[log.check_date].add(log.item_id);
+      return map;
+    }, {});
+  }, [checkLogs]);
 
   const selectedRecords = selectedDate
     ? recordsByDate[selectedDate] || []
@@ -115,10 +130,10 @@ export default function CalendarPage({
   }
 
   function goToday() {
-    const today = new Date();
-    setYear(today.getFullYear());
-    setMonthIndex(today.getMonth());
-    setSelectedDate(today.toISOString().slice(0, 10));
+    const japanToday = getJapanDateParts();
+    setYear(japanToday.year);
+    setMonthIndex(japanToday.month - 1);
+    setSelectedDate(today());
   }
 
 
@@ -212,7 +227,14 @@ export default function CalendarPage({
             const dayMemories = memoriesByDate[key] || [];
             const dayEvents = eventsByDate[key] || [];
             const isSelected = selectedDate === key;
-            const isToday = key === new Date().toISOString().slice(0, 10);
+            const isToday = key === today();
+            const dayCheckedIds = checksByDate[key] || new Set();
+            const checkedItemCount = activeCheckItems.filter((item) =>
+              dayCheckedIds.has(item.id)
+            ).length;
+            const allChecksDone =
+              activeCheckItems.length > 0 &&
+              checkedItemCount === activeCheckItems.length;
 
             return (
               <button
@@ -248,6 +270,16 @@ export default function CalendarPage({
                       {dayEvents.length > 1 && (
                         <small>{dayEvents.length}</small>
                       )}
+                    </span>
+                  )}
+
+                  {checkedItemCount > 0 && (
+                    <span
+                      className={allChecksDone ? 'calendar-check-complete' : ''}
+                      title={`${checkedItemCount}/${activeCheckItems.length}項目確認`}
+                    >
+                      {allChecksDone ? '✅' : '☑️'}
+                      {!allChecksDone && <small>{checkedItemCount}</small>}
                     </span>
                   )}
                 </span>
@@ -308,7 +340,8 @@ export default function CalendarPage({
 
           {!selectedRecords.length &&
             !selectedMemories.length &&
-            !selectedEvents.length && (
+            !selectedEvents.length &&
+            !(checksByDate[selectedDate]?.size > 0) && (
               <p className="muted">この日の記録はまだありません。</p>
             )}
 
@@ -376,6 +409,27 @@ export default function CalendarPage({
                     </div>
                   </button>
                 ))}
+              </div>
+            </div>
+          )}
+
+          {activeCheckItems.length > 0 && (
+            <div className="calendar-detail-section">
+              <h3>☑️ 毎日のチェック</h3>
+              <div className="calendar-check-summary">
+                {activeCheckItems.map((item) => {
+                  const checked =
+                    checksByDate[selectedDate]?.has(item.id) || false;
+
+                  return (
+                    <span
+                      key={item.id}
+                      className={checked ? 'checked' : ''}
+                    >
+                      {checked ? '✓' : '−'} {item.icon || '✅'} {item.title}
+                    </span>
+                  );
+                })}
               </div>
             </div>
           )}

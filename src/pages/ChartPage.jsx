@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import WeightChart from '../components/WeightChart';
-import { formatDate } from '../lib/helpers';
+import { dateKeyFromDate, formatDate, parseDateKey, today } from '../lib/helpers';
 
 const FILTERS = [
   ['30d', '30日'],
@@ -10,13 +10,13 @@ const FILTERS = [
 ];
 
 function getStartDate(filter) {
-  const date = new Date();
+  const date = parseDateKey(today());
 
   if (filter === '30d') date.setDate(date.getDate() - 30);
   if (filter === '90d') date.setDate(date.getDate() - 90);
   if (filter === '1y') date.setFullYear(date.getFullYear() - 1);
 
-  return filter === 'all' ? null : date.toISOString().slice(0, 10);
+  return filter === 'all' ? null : dateKeyFromDate(date);
 }
 
 function StatCard({ icon, value, label }) {

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { formatDate } from '../lib/helpers';
+import { currentMonth, formatDate } from '../lib/helpers';
 import MemoryMedia from '../components/MemoryMedia';
 import { getMediaType } from '../lib/media';
 
@@ -37,7 +37,7 @@ function buildSlides(memories, filter, month, order) {
 export default function SlideshowPage({ memories, onOpenMemory }) {
   const stageRef = useRef(null);
   const [filter, setFilter] = useState('all');
-  const [month, setMonth] = useState(new Date().toISOString().slice(0, 7));
+  const [month, setMonth] = useState(currentMonth());
   const [order, setOrder] = useState('oldest');
   const [speed, setSpeed] = useState(4);
   const [playing, setPlaying] = useState(false);

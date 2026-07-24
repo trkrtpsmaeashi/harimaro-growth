@@ -1,0 +1,6 @@
+FAILED
+
+> build
+> vite build
+
+sh: 1: vite: Permission denied

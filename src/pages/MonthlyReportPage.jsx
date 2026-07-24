@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { formatDate } from '../lib/helpers';
+import { currentMonth, formatDate, today } from '../lib/helpers';
 import { getMediaType, getMediaUrl } from '../lib/media';
 import MemoryMedia from '../components/MemoryMedia';
 
@@ -37,7 +37,7 @@ export default function MonthlyReportPage({
   onPhoto,
 }) {
   const [month, setMonth] = useState(
-    new Date().toISOString().slice(0, 7)
+    currentMonth()
   );
 
   const monthRecords = useMemo(
@@ -349,7 +349,7 @@ export default function MonthlyReportPage({
           <h1>{monthLabel(month)}</h1>
           <div className="photobook-cover-icon">🦔</div>
           <h2>はりまろとの毎日</h2>
-          <small>作成日：{new Date().toLocaleDateString('ja-JP')}</small>
+          <small>作成日：{formatDate(today())}</small>
         </article>
 
         <article className="photobook-page photobook-summary-page">

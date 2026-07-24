@@ -3038,3 +3038,296 @@ body.modal-open{
   height:100%;
   object-fit:cover;
 }
+
+
+/* Daily checklist + Japan date fix v3.1 */
+.home-checklist-card{
+  display:grid;
+  grid-template-columns:1fr minmax(150px,220px) auto;
+  align-items:center;
+  gap:18px;
+  padding:18px 20px;
+  margin-bottom:16px;
+  border:1px solid #d9d1c5;
+  border-radius:22px;
+  background:linear-gradient(135deg,#fff,#edf4ee);
+}
+.home-checklist-main{
+  display:flex;
+  align-items:center;
+  gap:13px;
+}
+.home-checklist-main > span{
+  font-size:34px;
+}
+.home-checklist-main h2{
+  margin:3px 0 5px;
+  font-size:20px;
+}
+.home-checklist-main p{
+  margin:0;
+  color:var(--muted);
+}
+.home-checklist-progress{
+  display:grid;
+  gap:6px;
+}
+.home-checklist-progress > strong{
+  text-align:right;
+  color:#55705c;
+}
+.home-checklist-progress > div{
+  height:10px;
+  overflow:hidden;
+  border-radius:999px;
+  background:#dfe8e1;
+}
+.home-checklist-progress > div span{
+  display:block;
+  height:100%;
+  border-radius:inherit;
+  background:var(--green);
+  transition:width .25s;
+}
+.home-checklist-card > button{
+  padding:11px 14px;
+  border:0;
+  border-radius:13px;
+  background:var(--green);
+  color:#fff;
+  font-weight:800;
+}
+.checklist-heading{
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  gap:16px;
+}
+.checklist-date-pill{
+  padding:8px 12px;
+  border-radius:999px;
+  background:#e7efe8;
+  color:#45614c;
+  font-size:12px;
+  font-weight:800;
+}
+.checklist-day-nav{
+  display:grid;
+  grid-template-columns:auto 1fr auto;
+  align-items:center;
+  gap:12px;
+}
+.checklist-day-nav > button{
+  width:44px;
+  height:44px;
+  border:1px solid var(--border);
+  border-radius:14px;
+  background:#fff;
+  font-size:26px;
+}
+.checklist-day-nav > div{
+  display:grid;
+  justify-items:center;
+  gap:6px;
+}
+.checklist-day-nav strong{
+  font-size:20px;
+}
+.checklist-today-button{
+  padding:5px 9px;
+  border:0;
+  border-radius:999px;
+  background:#eee9e3;
+  color:#655a51;
+  font-size:11px;
+  font-weight:800;
+}
+.checklist-progress-header{
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  margin-top:20px;
+}
+.checklist-progress-header div strong,
+.checklist-progress-header div span{
+  display:block;
+}
+.checklist-progress-header div strong{
+  font-size:28px;
+}
+.checklist-progress-header div span{
+  color:var(--muted);
+  font-size:12px;
+}
+.checklist-progress-header em{
+  color:var(--green);
+  font-size:22px;
+  font-style:normal;
+  font-weight:900;
+}
+.checklist-progress-track{
+  height:12px;
+  overflow:hidden;
+  margin:10px 0 17px;
+  border-radius:999px;
+  background:#e5e0d9;
+}
+.checklist-progress-track span{
+  display:block;
+  height:100%;
+  border-radius:inherit;
+  background:linear-gradient(90deg,#78927f,#9eb5a4);
+  transition:width .25s;
+}
+.daily-check-list{
+  display:grid;
+  gap:9px;
+}
+.daily-check-item{
+  display:grid;
+  grid-template-columns:1fr auto;
+  align-items:center;
+  border:1px solid var(--border);
+  border-radius:16px;
+  background:#fff;
+  transition:.18s;
+}
+.daily-check-item.checked{
+  border-color:#b7c9bb;
+  background:#eef5ef;
+}
+.daily-check-toggle{
+  display:grid;
+  grid-template-columns:auto auto 1fr;
+  align-items:center;
+  gap:12px;
+  width:100%;
+  padding:14px;
+  border:0;
+  background:transparent;
+  color:inherit;
+  text-align:left;
+}
+.daily-check-toggle:disabled{
+  cursor:default;
+}
+.daily-check-box{
+  width:29px;
+  height:29px;
+  display:grid;
+  place-items:center;
+  border:2px solid #c9c0b7;
+  border-radius:9px;
+  background:#fff;
+  color:#fff;
+  font-weight:900;
+}
+.daily-check-item.checked .daily-check-box{
+  border-color:var(--green);
+  background:var(--green);
+}
+.daily-check-icon{
+  font-size:25px;
+}
+.daily-check-copy strong,
+.daily-check-copy small{
+  display:block;
+}
+.daily-check-copy small{
+  margin-top:3px;
+  color:var(--muted);
+}
+.daily-check-remove{
+  width:34px;
+  height:34px;
+  margin-right:10px;
+  border:0;
+  border-radius:50%;
+  background:#f5e1e1;
+  color:#a62e2e;
+  font-weight:900;
+}
+.checklist-empty{
+  padding:25px;
+  text-align:center;
+}
+.checklist-empty span{
+  font-size:45px;
+}
+.checklist-empty h3{
+  margin:8px 0 5px;
+}
+.checklist-empty p{
+  margin:0;
+  color:var(--muted);
+}
+.checklist-create-grid{
+  display:grid;
+  grid-template-columns:280px 1fr auto;
+  align-items:end;
+  gap:12px;
+}
+.checklist-create-grid > button{
+  padding:13px 17px;
+  border:0;
+  border-radius:13px;
+  background:var(--brown);
+  color:#fff;
+  font-weight:800;
+}
+.checklist-icon-picker{
+  display:flex;
+  flex-wrap:wrap;
+  gap:5px;
+  margin-bottom:7px;
+}
+.checklist-icon-picker button{
+  width:36px;
+  height:36px;
+  padding:0;
+  border:1px solid var(--border);
+  border-radius:10px;
+  background:#fff;
+}
+.checklist-icon-picker button.active{
+  border-color:var(--green);
+  background:#e7efe8;
+}
+.calendar-check-complete{
+  filter:drop-shadow(0 1px 2px rgba(40,90,50,.28));
+}
+.calendar-check-summary{
+  display:flex;
+  flex-wrap:wrap;
+  gap:7px;
+}
+.calendar-check-summary span{
+  padding:7px 10px;
+  border-radius:999px;
+  background:#f1ece6;
+  color:#786f67;
+  font-size:12px;
+}
+.calendar-check-summary span.checked{
+  background:#e4efe6;
+  color:#3f6948;
+  font-weight:800;
+}
+@media(max-width:720px){
+  .home-checklist-card{
+    grid-template-columns:1fr;
+  }
+  .home-checklist-progress > strong{
+    text-align:left;
+  }
+  .checklist-heading{
+    align-items:flex-start;
+    flex-direction:column;
+  }
+  .checklist-create-grid{
+    grid-template-columns:1fr;
+  }
+  .checklist-create-grid > button{
+    width:100%;
+  }
+}

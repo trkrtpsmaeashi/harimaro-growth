@@ -17,6 +17,7 @@ import CalendarPage from './pages/CalendarPage';
 import MonthlyReportPage from './pages/MonthlyReportPage';
 import SlideshowPage from './pages/SlideshowPage';
 import TimelinePage from './pages/TimelinePage';
+import ChecklistPage from './pages/ChecklistPage';
 import {
   loadNotificationSettings,
   saveNotificationSettings,
@@ -32,6 +33,8 @@ export default function App() {
   const isViewer = household?.my_role === 'viewer';
   const [memories, setMemories] = useState([]);
   const [events, setEvents] = useState([]);
+  const [checkItems, setCheckItems] = useState([]);
+  const [checkLogs, setCheckLogs] = useState([]);
   const [page, setPage] = useState('home');
   const [menuOpen, setMenuOpen] = useState(false);
   const [photoUrl, setPhotoUrl] = useState('');
@@ -123,6 +126,32 @@ export default function App() {
     setEvents(normalized);
   }
 
+
+  async function loadChecklist(householdId = household?.household_id) {
+    if (!householdId) return;
+
+    const [{ data: items, error: itemsError }, { data: logs, error: logsError }] =
+      await Promise.all([
+        supabase
+          .from('harimaro_check_items')
+          .select('*')
+          .eq('household_id', householdId)
+          .order('sort_order', { ascending: true })
+          .order('created_at', { ascending: true }),
+        supabase
+          .from('harimaro_check_logs')
+          .select('*')
+          .eq('household_id', householdId)
+          .order('check_date', { ascending: false }),
+      ]);
+
+    if (itemsError) throw itemsError;
+    if (logsError) throw logsError;
+
+    setCheckItems(items || []);
+    setCheckLogs(logs || []);
+  }
+
   async function loadAll() {
     const summary = await ensureHousehold();
     setHousehold(summary);
@@ -131,6 +160,7 @@ export default function App() {
       loadRecords(summary.household_id),
       loadMemories(summary.household_id),
       loadEvents(summary.household_id),
+      loadChecklist(summary.household_id),
     ]);
   }
 
@@ -142,6 +172,7 @@ export default function App() {
       loadRecords(summary.household_id),
       loadMemories(summary.household_id),
       loadEvents(summary.household_id),
+      loadChecklist(summary.household_id),
     ]);
   }
 
@@ -211,6 +242,8 @@ export default function App() {
         user={user}
         householdId={household?.household_id}
         memories={memories}
+        checkItems={checkItems}
+        checkLogs={checkLogs}
         canEdit={canEdit}
         isViewer={isViewer}
         onReload={loadMemories}
@@ -243,6 +276,8 @@ export default function App() {
         records={records}
         memories={memories}
         events={events}
+        checkItems={checkItems}
+        checkLogs={checkLogs}
         onPhoto={setPhotoUrl}
         onOpenMemory={(post, index) => {
           setDetailPost(post);
@@ -289,6 +324,17 @@ export default function App() {
         }}
       />
     );
+  } else if (page === 'checklist') {
+    content = (
+      <ChecklistPage
+        user={user}
+        householdId={household?.household_id}
+        canEdit={canEdit}
+        items={checkItems}
+        logs={checkLogs}
+        onReload={loadChecklist}
+      />
+    );
   } else if (page === 'settings') {
     content = (
       <SettingsPage
@@ -307,6 +353,8 @@ export default function App() {
       <HomePage
         records={records}
         memories={memories}
+        checkItems={checkItems}
+        checkLogs={checkLogs}
         canEdit={canEdit}
         onNavigate={setPage}
         notificationSettings={notificationSettings}
