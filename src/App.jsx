@@ -15,11 +15,13 @@ import SettingsPage from './pages/SettingsPage';
 import CalendarPage from './pages/CalendarPage';
 import MonthlyReportPage from './pages/MonthlyReportPage';
 import SlideshowPage from './pages/SlideshowPage';
+import TimelinePage from './pages/TimelinePage';
 
 export default function App() {
   const [user, setUser] = useState(null);
   const [records, setRecords] = useState([]);
   const [memories, setMemories] = useState([]);
+  const [events, setEvents] = useState([]);
   const [page, setPage] = useState('home');
   const [menuOpen, setMenuOpen] = useState(false);
   const [photoUrl, setPhotoUrl] = useState('');
@@ -64,8 +66,36 @@ export default function App() {
     setMemories(normalized);
   }
 
+
+  async function loadEvents() {
+    const { data, error } = await supabase
+      .from('harimaro_events')
+      .select(`
+        *,
+        photos:harimaro_event_photos (
+          id,
+          photo_url,
+          photo_path,
+          sort_order
+        )
+      `)
+      .order('event_date', { ascending: false })
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    const normalized = (data || []).map((event) => ({
+      ...event,
+      photos: [...(event.photos || [])].sort(
+        (a, b) => a.sort_order - b.sort_order
+      ),
+    }));
+
+    setEvents(normalized);
+  }
+
   async function loadAll() {
-    await Promise.all([loadRecords(), loadMemories()]);
+    await Promise.all([loadRecords(), loadMemories(), loadEvents()]);
   }
 
   async function deleteRecord(id, photoPath) {
@@ -159,6 +189,21 @@ export default function App() {
     content = (
       <SlideshowPage
         memories={memories}
+        onOpenMemory={(post, index) => {
+          setDetailPost(post);
+          setDetailIndex(index);
+        }}
+      />
+    );
+  } else if (page === 'timeline') {
+    content = (
+      <TimelinePage
+        user={user}
+        records={records}
+        memories={memories}
+        events={events}
+        onReloadEvents={loadEvents}
+        onPhoto={setPhotoUrl}
         onOpenMemory={(post, index) => {
           setDetailPost(post);
           setDetailIndex(index);

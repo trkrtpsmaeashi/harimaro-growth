@@ -1,0 +1,21 @@
+Harimaro Memories v1.5
+
+追加:
+- はりまろ年表
+- 体重記録、Memories、イベントを時系列で統合
+- 年ごとの折りたたみ
+- 年間サマリー
+- 種類別フィルター
+- 特別なイベントの登録と削除
+- イベントに複数写真を添付
+- Memories詳細画面・写真拡大との連携
+
+作業:
+1. ZIPを解凍してGitHubへ上書きアップロード
+2. Supabase SQL Editorで
+   supabase/add_timeline_events_v15.sql
+   を全文実行
+3. VercelがReadyになったら更新
+4. サイドバーの「📜 はりまろ年表」を開く
+
+既存データは消えません。
