@@ -16,6 +16,7 @@ export default function Sidebar({
     ['tags', '🏷️', 'タグ検索'],
     ['calendar', '📅', 'カレンダー'],
     ['report', '📖', '月間レポート'],
+    ['slideshow', '🎞️', 'スライドショー'],
     ['settings', '⚙️', '設定'],
   ];
 

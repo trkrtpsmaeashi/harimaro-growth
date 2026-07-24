@@ -14,6 +14,7 @@ import TagsPage from './pages/TagsPage';
 import SettingsPage from './pages/SettingsPage';
 import CalendarPage from './pages/CalendarPage';
 import MonthlyReportPage from './pages/MonthlyReportPage';
+import SlideshowPage from './pages/SlideshowPage';
 
 export default function App() {
   const [user, setUser] = useState(null);
@@ -148,6 +149,16 @@ export default function App() {
         records={records}
         memories={memories}
         onPhoto={setPhotoUrl}
+        onOpenMemory={(post, index) => {
+          setDetailPost(post);
+          setDetailIndex(index);
+        }}
+      />
+    );
+  } else if (page === 'slideshow') {
+    content = (
+      <SlideshowPage
+        memories={memories}
         onOpenMemory={(post, index) => {
           setDetailPost(post);
           setDetailIndex(index);
