@@ -2849,3 +2849,23 @@ body.modal-open{
     grid-template-columns:1fr;
   }
 }
+
+
+/* Native invite sharing v2.0.3 */
+.native-share-button{
+  background:#718b78!important;
+}
+
+.native-share-button:hover{
+  filter:brightness(.96);
+}
+
+.invite-share-actions button{
+  min-width:132px;
+}
+
+@media(max-width:720px){
+  .invite-share-actions button{
+    min-width:0;
+  }
+}

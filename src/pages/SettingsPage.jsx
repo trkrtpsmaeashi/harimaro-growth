@@ -47,30 +47,86 @@ export default function SettingsPage({
     }
   }
 
-  function shareInviteOnLine() {
-    if (!inviteCode) {
-      setHouseholdMessage('先に招待コードを発行してね。');
-      return;
-    }
-
+  function buildInviteShareText() {
     const appUrl = window.location.origin;
-    const shareText = [
+
+    return [
       '🦔 Harimaro Memoriesの共有グループに招待されました。',
       '',
       `招待コード：${inviteCode}`,
       `アプリURL：${appUrl}`,
       '',
+      '参加手順',
       '1. URLを開いて新規登録またはログイン',
       '2. 設定 → 共有グループ',
       '3. 招待コードを入力して「参加する」',
       '',
       '※招待コードは24時間有効です。',
     ].join('\n');
+  }
 
-    const lineUrl =
-      `https://line.me/R/share?text=${encodeURIComponent(shareText)}`;
+  async function copyInviteInformation() {
+    if (!inviteCode) {
+      setHouseholdMessage('先に招待コードを発行してね。');
+      return false;
+    }
 
-    window.open(lineUrl, '_blank', 'noopener,noreferrer');
+    const shareText = buildInviteShareText();
+
+    try {
+      await navigator.clipboard.writeText(shareText);
+      setHouseholdMessage('招待コード・URL・参加手順をコピーしました。');
+      return true;
+    } catch {
+      const textarea = document.createElement('textarea');
+      textarea.value = shareText;
+      textarea.setAttribute('readonly', '');
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.select();
+
+      const copied = document.execCommand('copy');
+      document.body.removeChild(textarea);
+
+      setHouseholdMessage(
+        copied
+          ? '招待コード・URL・参加手順をコピーしました。'
+          : 'コピーできませんでした。招待コードを手動でコピーしてください。'
+      );
+
+      return copied;
+    }
+  }
+
+  async function shareInvite() {
+    if (!inviteCode) {
+      setHouseholdMessage('先に招待コードを発行してね。');
+      return;
+    }
+
+    const appUrl = window.location.origin;
+    const shareText = buildInviteShareText();
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'Harimaro Memoriesへの招待',
+          text: shareText,
+          url: appUrl,
+        });
+
+        setHouseholdMessage('招待情報を共有しました。');
+        return;
+      } catch (error) {
+        if (error?.name === 'AbortError') {
+          setHouseholdMessage('共有をキャンセルしました。');
+          return;
+        }
+      }
+    }
+
+    await copyInviteInformation();
   }
 
   async function generateInvite() {
@@ -219,17 +275,17 @@ export default function SettingsPage({
                 <div className="invite-share-actions">
                   <button
                     type="button"
-                    onClick={() => navigator.clipboard?.writeText(inviteCode)}
+                    onClick={copyInviteInformation}
                   >
-                    コピー
+                    招待情報をコピー
                   </button>
 
                   <button
                     type="button"
-                    className="line-share-button"
-                    onClick={shareInviteOnLine}
+                    className="native-share-button"
+                    onClick={shareInvite}
                   >
-                    LINEで共有
+                    共有する
                   </button>
                 </div>
               </div>
