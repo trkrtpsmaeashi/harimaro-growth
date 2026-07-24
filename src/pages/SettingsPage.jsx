@@ -47,6 +47,32 @@ export default function SettingsPage({
     }
   }
 
+  function shareInviteOnLine() {
+    if (!inviteCode) {
+      setHouseholdMessage('先に招待コードを発行してね。');
+      return;
+    }
+
+    const appUrl = window.location.origin;
+    const shareText = [
+      '🦔 Harimaro Memoriesの共有グループに招待されました。',
+      '',
+      `招待コード：${inviteCode}`,
+      `アプリURL：${appUrl}`,
+      '',
+      '1. URLを開いて新規登録またはログイン',
+      '2. 設定 → 共有グループ',
+      '3. 招待コードを入力して「参加する」',
+      '',
+      '※招待コードは24時間有効です。',
+    ].join('\n');
+
+    const lineUrl =
+      `https://line.me/R/share?text=${encodeURIComponent(shareText)}`;
+
+    window.open(lineUrl, '_blank', 'noopener,noreferrer');
+  }
+
   async function generateInvite() {
     setHouseholdMessage('招待コードを作成中…');
 
@@ -186,15 +212,26 @@ export default function SettingsPage({
             </button>
 
             {inviteCode && (
-              <div className="invite-code-display">
+              <div className="invite-code-display invite-code-display-v202">
                 <span>招待コード</span>
                 <strong>{inviteCode}</strong>
-                <button
-                  type="button"
-                  onClick={() => navigator.clipboard?.writeText(inviteCode)}
-                >
-                  コピー
-                </button>
+
+                <div className="invite-share-actions">
+                  <button
+                    type="button"
+                    onClick={() => navigator.clipboard?.writeText(inviteCode)}
+                  >
+                    コピー
+                  </button>
+
+                  <button
+                    type="button"
+                    className="line-share-button"
+                    onClick={shareInviteOnLine}
+                  >
+                    LINEで共有
+                  </button>
+                </div>
               </div>
             )}
           </div>

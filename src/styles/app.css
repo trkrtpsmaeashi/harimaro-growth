@@ -2805,3 +2805,47 @@ body.modal-open{
   font-style:normal;
   font-weight:800;
 }
+
+
+/* LINE invite sharing v2.0.2 */
+.invite-code-display-v202{
+  grid-template-columns:1fr auto auto;
+}
+
+.invite-share-actions{
+  display:flex;
+  gap:8px;
+}
+
+.invite-share-actions button{
+  min-width:92px;
+}
+
+.line-share-button{
+  background:#06c755!important;
+}
+
+.line-share-button:hover{
+  filter:brightness(.96);
+}
+
+@media(max-width:720px){
+  .invite-code-display-v202{
+    grid-template-columns:1fr;
+  }
+
+  .invite-share-actions{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+  }
+
+  .invite-share-actions button{
+    width:100%;
+  }
+}
+
+@media(max-width:430px){
+  .invite-share-actions{
+    grid-template-columns:1fr;
+  }
+}
