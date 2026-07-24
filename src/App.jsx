@@ -12,6 +12,7 @@ import ChartPage from './pages/ChartPage';
 import PhotosPage from './pages/PhotosPage';
 import TagsPage from './pages/TagsPage';
 import SettingsPage from './pages/SettingsPage';
+import CalendarPage from './pages/CalendarPage';
 
 export default function App() {
   const [user, setUser] = useState(null);
@@ -117,6 +118,18 @@ export default function App() {
     content = <PhotosPage records={records} onPhoto={setPhotoUrl} />;
   } else if (page === 'tags') {
     content = <TagsPage records={records} onPhoto={setPhotoUrl} onDelete={deleteRecord} />;
+  } else if (page === 'calendar') {
+    content = (
+      <CalendarPage
+        records={records}
+        memories={memories}
+        onPhoto={setPhotoUrl}
+        onOpenMemory={(post, index) => {
+          setDetailPost(post);
+          setDetailIndex(index);
+        }}
+      />
+    );
   } else if (page === 'settings') {
     content = <SettingsPage email={user.email} count={records.length} />;
   } else {

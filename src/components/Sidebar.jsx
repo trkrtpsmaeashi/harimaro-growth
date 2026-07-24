@@ -14,6 +14,7 @@ export default function Sidebar({
     ['chart', '📈', '成長グラフ'],
     ['photos', '🖼️', '記録写真'],
     ['tags', '🏷️', 'タグ検索'],
+    ['calendar', '📅', 'カレンダー'],
     ['settings', '⚙️', '設定'],
   ];
 
