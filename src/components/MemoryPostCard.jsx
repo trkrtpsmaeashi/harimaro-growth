@@ -5,7 +5,7 @@ export default function MemoryPostCard({
   post,
   onToggleFavorite,
   onDelete,
-  onOpenPhoto,
+  onOpenDetail,
 }) {
   const [index, setIndex] = useState(0);
   const [touchStart, setTouchStart] = useState(null);
@@ -52,7 +52,7 @@ export default function MemoryPostCard({
         {currentPhoto ? (
           <button
             className="memory-carousel-photo"
-            onClick={() => onOpenPhoto(currentPhoto.photo_url)}
+            onClick={() => onOpenDetail(post, index)}
           >
             <img
               src={currentPhoto.photo_url}

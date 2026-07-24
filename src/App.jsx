@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from './lib/supabase';
 import Layout from './components/Layout';
 import PhotoModal from './components/PhotoModal';
+import MemoryDetailModal from './components/MemoryDetailModal';
 import LoginPage from './pages/LoginPage';
 import HomePage from './pages/HomePage';
 import NewRecordPage from './pages/NewRecordPage';
@@ -19,6 +20,8 @@ export default function App() {
   const [page, setPage] = useState('home');
   const [menuOpen, setMenuOpen] = useState(false);
   const [photoUrl, setPhotoUrl] = useState('');
+  const [detailPost, setDetailPost] = useState(null);
+  const [detailIndex, setDetailIndex] = useState(0);
 
   async function loadRecords() {
     const { data, error } = await supabase
@@ -102,7 +105,10 @@ export default function App() {
         user={user}
         memories={memories}
         onReload={loadMemories}
-        onPhoto={setPhotoUrl}
+        onOpenDetail={(post, index) => {
+          setDetailPost(post);
+          setDetailIndex(index);
+        }}
       />
     );
   } else if (page === 'chart') {
@@ -138,6 +144,31 @@ export default function App() {
       </Layout>
 
       <PhotoModal url={photoUrl} onClose={() => setPhotoUrl('')} />
+
+      <MemoryDetailModal
+        post={detailPost}
+        initialIndex={detailIndex}
+        onClose={() => setDetailPost(null)}
+        onToggleFavorite={async (post) => {
+          const { error } = await supabase
+            .from('harimaro_memory_posts')
+            .update({ is_favorite: !post.is_favorite })
+            .eq('id', post.id);
+
+          if (error) {
+            alert(error.message);
+            return;
+          }
+
+          await loadMemories();
+
+          setDetailPost((current) =>
+            current
+              ? { ...current, is_favorite: !current.is_favorite }
+              : current
+          );
+        }}
+      />
     </>
   );
 }

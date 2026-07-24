@@ -15,7 +15,7 @@ export default function MemoriesPage({
   user,
   memories,
   onReload,
-  onPhoto,
+  onOpenDetail,
 }) {
   const [date, setDate] = useState(today());
   const [caption, setCaption] = useState('');
@@ -374,7 +374,7 @@ export default function MemoriesPage({
                   post={post}
                   onToggleFavorite={toggleFavorite}
                   onDelete={deletePost}
-                  onOpenPhoto={onPhoto}
+                  onOpenDetail={onOpenDetail}
                 />
               ))}
             </div>
