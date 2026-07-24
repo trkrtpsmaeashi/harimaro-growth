@@ -182,3 +182,11 @@ input,textarea{width:100%;padding:13px;border:1px solid #dcd3c9;border-radius:13
   width:100%;
   margin-top:6px;
 }
+
+
+/* Memories v0.5 multiple upload */
+.selected-files{
+  margin:7px 0 0;
+  color:var(--muted);
+  font-size:12px;
+}

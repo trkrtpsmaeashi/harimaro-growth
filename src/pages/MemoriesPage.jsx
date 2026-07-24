@@ -19,7 +19,7 @@ export default function MemoriesPage({
   const [date, setDate] = useState(today());
   const [caption, setCaption] = useState('');
   const [tags, setTags] = useState('');
-  const [file, setFile] = useState(null);
+  const [files, setFiles] = useState([]);
   const [message, setMessage] = useState('');
   const [searchText, setSearchText] = useState('');
   const [selectedTag, setSelectedTag] = useState('');
@@ -57,51 +57,74 @@ export default function MemoriesPage({
   }, [filteredMemories]);
 
   async function saveMemory() {
-    if (!date || !file) {
+    if (!date || files.length === 0) {
       setMessage('日付と写真を選んでね。');
       return;
     }
 
-    setMessage('保存中…');
+    setMessage(`${files.length}枚を保存中…`);
 
-    const path = `${user.id}/memories/${crypto.randomUUID()}-${file.name.replace(/[^\w.-]/g, '_')}`;
+    const parsedTags = tags
+      .split(',')
+      .map((tag) => tag.trim())
+      .filter(Boolean);
 
-    const upload = await supabase.storage
-      .from('harimaro-photos')
-      .upload(path, file, { upsert: false });
+    const uploadedPaths = [];
+    const rows = [];
 
-    if (upload.error) {
-      setMessage(upload.error.message);
-      return;
+    for (const file of files) {
+      const path = `${user.id}/memories/${crypto.randomUUID()}-${file.name.replace(/[^\w.-]/g, '_')}`;
+
+      const upload = await supabase.storage
+        .from('harimaro-photos')
+        .upload(path, file, { upsert: false });
+
+      if (upload.error) {
+        if (uploadedPaths.length) {
+          await supabase.storage
+            .from('harimaro-photos')
+            .remove(uploadedPaths);
+        }
+
+        setMessage(upload.error.message);
+        return;
+      }
+
+      uploadedPaths.push(path);
+
+      const photoUrl = supabase.storage
+        .from('harimaro-photos')
+        .getPublicUrl(path).data.publicUrl;
+
+      rows.push({
+        user_id: user.id,
+        memory_date: date,
+        caption: caption.trim(),
+        tags: parsedTags,
+        photo_url: photoUrl,
+        photo_path: path,
+        is_favorite: false,
+      });
     }
 
-    const photoUrl = supabase.storage
-      .from('harimaro-photos')
-      .getPublicUrl(path).data.publicUrl;
-
-    const { error } = await supabase.from('harimaro_memories').insert({
-      user_id: user.id,
-      memory_date: date,
-      caption: caption.trim(),
-      tags: tags
-        .split(',')
-        .map((tag) => tag.trim())
-        .filter(Boolean),
-      photo_url: photoUrl,
-      photo_path: path,
-      is_favorite: false,
-    });
+    const { error } = await supabase
+      .from('harimaro_memories')
+      .insert(rows);
 
     if (error) {
-      await supabase.storage.from('harimaro-photos').remove([path]);
+      await supabase.storage
+        .from('harimaro-photos')
+        .remove(uploadedPaths);
+
       setMessage(error.message);
       return;
     }
 
+    const savedCount = files.length;
     setCaption('');
     setTags('');
-    setFile(null);
-    setMessage('保存しました。');
+    setFiles([]);
+    setMessage(`${savedCount}枚保存しました。`);
     document.querySelector('#memoryPhoto').value = '';
     await onReload();
   }
@@ -169,9 +192,14 @@ export default function MemoriesPage({
               id="memoryPhoto"
               type="file"
               accept="image/*"
-              capture="environment"
-              onChange={(event) => setFile(event.target.files[0] || null)}
+              multiple
+              onChange={(event) => setFiles(Array.from(event.target.files || []))}
             />
+            <p className="selected-files">
+              {files.length
+                ? `${files.length}枚選択中`
+                : '複数枚まとめて選択できます'}
+            </p>
           </div>
         </div>
 
@@ -190,7 +218,9 @@ export default function MemoriesPage({
         />
 
         <div className="button-row">
-          <button onClick={saveMemory}>📷 思い出を保存</button>
+          <button onClick={saveMemory}>
+            📷 {files.length > 1 ? `${files.length}枚を保存` : '思い出を保存'}
+          </button>
         </div>
 
         <p className="message">{message}</p>
