@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react';
 import RecordCard from '../components/RecordCard';
 import { formatDate } from '../lib/helpers';
+import { getMediaType, getMediaUrl } from '../lib/media';
+import MemoryMedia from '../components/MemoryMedia';
 
 function monthLabel(monthKey) {
   if (!monthKey) return '';
@@ -301,10 +303,10 @@ export default function TagsPage({
                       onClick={() => onOpenMemory(memory, 0)}
                     >
                       {memory.photos?.[0] ? (
-                        <img
-                          src={memory.photos[0].photo_url}
-                          alt={memory.caption || 'はりまろの思い出'}
-                        />
+                        <MemoryMedia
+                  media={memory.photos[0]}
+                  alt={memory.caption || 'はりまろの思い出'}
+                />
                       ) : (
                         <span>🦔</span>
                       )}

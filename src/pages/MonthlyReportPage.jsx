@@ -1,5 +1,7 @@
 import { useMemo, useState } from 'react';
 import { formatDate } from '../lib/helpers';
+import { getMediaType, getMediaUrl } from '../lib/media';
+import MemoryMedia from '../components/MemoryMedia';
 
 function pad(value) {
   return String(value).padStart(2, '0');
@@ -279,8 +281,8 @@ export default function MonthlyReportPage({
                 onClick={() => onOpenMemory(memory, 0)}
               >
                 {memory.photos?.[0] ? (
-                  <img
-                    src={memory.photos[0].photo_url}
+                  <MemoryMedia
+                    media={memory.photos[0]}
                     alt={memory.caption || 'はりまろの思い出'}
                   />
                 ) : (
@@ -398,10 +400,18 @@ export default function MonthlyReportPage({
                 </strong>
               </header>
 
-              <img
-                src={photo.photo_url}
-                alt={memory.caption || 'はりまろの思い出'}
-              />
+              {getMediaType(photo) === 'video' ? (
+                <div className="photobook-video-placeholder">
+                  <span>🎥</span>
+                  <strong>動画</strong>
+                  <small>アプリ内で再生できます</small>
+                </div>
+              ) : (
+                <img
+                  src={getMediaUrl(photo)}
+                  alt={memory.caption || 'はりまろの思い出'}
+                />
+              )}
 
               <div className="photobook-caption">
                 <p>{memory.caption || 'ひとことなし'}</p>

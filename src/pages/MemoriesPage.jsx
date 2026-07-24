@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { today } from '../lib/helpers';
 import MemoryPostCard from '../components/MemoryPostCard';
+import { getMediaPath, getMediaUrl, mediaExtension } from '../lib/media';
 
 function monthLabel(dateText) {
   if (!dateText) return '';
@@ -87,7 +88,7 @@ export default function MemoriesPage({
     }, {});
   }, [filteredMemories]);
 
-  async function downloadPhoto(url, filename = 'harimaro-memory.jpg') {
+  async function downloadMedia(url, filename = 'harimaro-memory') {
     try {
       const response = await fetch(url);
       const blob = await response.blob();
@@ -106,16 +107,36 @@ export default function MemoriesPage({
 
   async function saveMemory() {
     if (!date || files.length === 0) {
-      setMessage('日付と写真を選んでね。');
+      setMessage('日付と写真・動画を選んでね。');
       return;
     }
 
-    setMessage(`${files.length}枚を保存中…`);
+    setMessage(`${files.length}件のメディアを保存中…`);
 
     const parsedTags = tags
       .split(',')
       .map((tag) => tag.trim())
       .filter(Boolean);
+
+    const invalidFile = files.find(
+      (file) =>
+        !file.type.startsWith('image/') &&
+        !file.type.startsWith('video/')
+    );
+
+    if (invalidFile) {
+      setMessage(`${invalidFile.name}は写真・動画ではありません。`);
+      return;
+    }
+
+    const oversizedVideo = files.find(
+      (file) => file.type.startsWith('video/') && file.size > 50 * 1024 * 1024
+    );
+
+    if (oversizedVideo) {
+      setMessage(`${oversizedVideo.name}は50MB以下にしてね。`);
+      return;
+    }
 
     const { data: post, error: postError } = await supabase
       .from('harimaro_memory_posts')
@@ -137,7 +158,7 @@ export default function MemoriesPage({
     }
 
     const uploadedPaths = [];
-    const photoRows = [];
+    const mediaRows = [];
 
     for (let index = 0; index < files.length; index += 1) {
       const file = files[index];
@@ -165,23 +186,31 @@ export default function MemoriesPage({
 
       uploadedPaths.push(path);
 
-      const photoUrl = supabase.storage
+      const mediaUrl = supabase.storage
         .from('harimaro-photos')
         .getPublicUrl(path).data.publicUrl;
 
-      photoRows.push({
+      const mediaType = file.type.startsWith('video/') ? 'video' : 'image';
+
+      mediaRows.push({
         post_id: post.id,
-        photo_url: photoUrl,
+        photo_url: mediaUrl,
         photo_path: path,
+        media_url: mediaUrl,
+        media_path: path,
+        media_type: mediaType,
+        mime_type: file.type || null,
+        file_name: file.name,
+        file_size: file.size,
         sort_order: index,
       });
     }
 
-    const { error: photosError } = await supabase
+    const { error: mediaError } = await supabase
       .from('harimaro_memory_photos')
-      .insert(photoRows);
+      .insert(mediaRows);
 
-    if (photosError) {
+    if (mediaError) {
       await supabase.storage
         .from('harimaro-photos')
         .remove(uploadedPaths);
@@ -191,7 +220,7 @@ export default function MemoriesPage({
         .delete()
         .eq('id', post.id);
 
-      setMessage(photosError.message);
+      setMessage(mediaError.message);
       return;
     }
 
@@ -199,7 +228,7 @@ export default function MemoriesPage({
     setCaption('');
     setTags('');
     setFiles([]);
-    setMessage(`${savedCount}枚を1つの思い出として保存しました。`);
+    setMessage(`${savedCount}件を1つの思い出として保存しました。`);
     document.querySelector('#memoryPhoto').value = '';
     await onReload();
   }
@@ -223,7 +252,7 @@ export default function MemoriesPage({
     if (!confirm('この思い出投稿を写真ごと削除する？')) return;
 
     const paths = (post.photos || [])
-      .map((photo) => photo.photo_path)
+      .map((media) => getMediaPath(media))
       .filter(Boolean);
 
     if (paths.length) {
@@ -252,7 +281,7 @@ export default function MemoriesPage({
         <p className="eyebrow">MEMORIES</p>
         <h2>思い出を残す</h2>
         <p className="muted">
-          複数の写真を、1つの思い出投稿として保存できます。
+          写真と動画を、1つの思い出投稿としてまとめて保存できます。
         </p>
       </section>
 
@@ -269,11 +298,11 @@ export default function MemoriesPage({
           </div>
 
           <div>
-            <label>写真</label>
+            <label>写真・動画</label>
             <input
               id="memoryPhoto"
               type="file"
-              accept="image/*"
+              accept="image/*,video/*"
               multiple
               onChange={(event) => {
                 addSelectedFiles(event.target.files);
@@ -283,8 +312,8 @@ export default function MemoriesPage({
 
             <p className="selected-files">
               {files.length
-                ? `${files.length}枚選択中。もう一度選択すると追加できます。`
-                : '1枚ずつでも、複数枚まとめても追加できます。'}
+                ? `${files.length}件選択中。もう一度選択すると追加できます。`
+                : '写真・動画を1件ずつでも、まとめても追加できます。'}
             </p>
 
             {files.length > 0 && (
@@ -332,7 +361,7 @@ export default function MemoriesPage({
 
         <div className="button-row">
           <button onClick={saveMemory}>
-            📷 {files.length > 1 ? `${files.length}枚を投稿` : '思い出を投稿'}
+            📷🎥 {files.length > 1 ? `${files.length}件を投稿` : '思い出を投稿'}
           </button>
         </div>
 
@@ -403,7 +432,7 @@ export default function MemoriesPage({
                   isViewer={isViewer}
                   onToggleFavorite={canEdit ? toggleFavorite : undefined}
                   onDelete={canEdit ? deletePost : undefined}
-                  onDownload={downloadPhoto}
+                  onDownload={downloadMedia}
                   onOpenDetail={onOpenDetail}
                 />
               ))}

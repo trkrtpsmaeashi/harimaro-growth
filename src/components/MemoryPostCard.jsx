@@ -1,5 +1,11 @@
 import { useState } from 'react';
 import { formatDate } from '../lib/helpers';
+import MemoryMedia from './MemoryMedia';
+import {
+  getMediaType,
+  getMediaUrl,
+  mediaExtension,
+} from '../lib/media';
 
 export default function MemoryPostCard({
   post,
@@ -12,18 +18,19 @@ export default function MemoryPostCard({
 }) {
   const [index, setIndex] = useState(0);
   const [touchStart, setTouchStart] = useState(null);
-  const photos = post.photos || [];
-  const currentPhoto = photos[index];
+  const mediaItems = post.photos || [];
+  const currentMedia = mediaItems[index];
+  const currentType = getMediaType(currentMedia);
 
   function previous() {
     setIndex((current) =>
-      current === 0 ? Math.max(photos.length - 1, 0) : current - 1
+      current === 0 ? Math.max(mediaItems.length - 1, 0) : current - 1
     );
   }
 
   function next() {
     setIndex((current) =>
-      current >= photos.length - 1 ? 0 : current + 1
+      current >= mediaItems.length - 1 ? 0 : current + 1
     );
   }
 
@@ -52,27 +59,44 @@ export default function MemoryPostCard({
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
       >
-        {currentPhoto ? (
-          <button
-            className="memory-carousel-photo"
-            onClick={() => onOpenDetail(post, index)}
-          >
-            <img
-              src={currentPhoto.photo_url}
-              alt={`はりまろの思い出 ${index + 1}`}
-            />
-          </button>
+        {currentMedia ? (
+          currentType === 'video' ? (
+            <div className="memory-carousel-video-wrap">
+              <MemoryMedia
+                media={currentMedia}
+                className="memory-carousel-video"
+                controls
+              />
+              <button
+                type="button"
+                className="open-media-detail-button"
+                onClick={() => onOpenDetail(post, index)}
+              >
+                ⛶ 詳細
+              </button>
+            </div>
+          ) : (
+            <button
+              className="memory-carousel-photo"
+              onClick={() => onOpenDetail(post, index)}
+            >
+              <MemoryMedia
+                media={currentMedia}
+                alt={`はりまろの思い出 ${index + 1}`}
+              />
+            </button>
+          )
         ) : (
           <div className="memory-carousel-empty">🦔</div>
         )}
 
-        {photos.length > 1 && (
+        {mediaItems.length > 1 && (
           <>
             <button
               type="button"
               className="carousel-arrow carousel-arrow-left"
               onClick={previous}
-              aria-label="前の写真"
+              aria-label="前のメディア"
             >
               ‹
             </button>
@@ -81,15 +105,21 @@ export default function MemoryPostCard({
               type="button"
               className="carousel-arrow carousel-arrow-right"
               onClick={next}
-              aria-label="次の写真"
+              aria-label="次のメディア"
             >
               ›
             </button>
 
             <span className="carousel-count">
-              {index + 1} / {photos.length}
+              {index + 1} / {mediaItems.length}
             </span>
           </>
+        )}
+
+        {currentMedia && (
+          <span className="media-type-badge">
+            {currentType === 'video' ? '🎥 動画' : '📷 写真'}
+          </span>
         )}
 
         {canEdit && onToggleFavorite && (
@@ -104,15 +134,15 @@ export default function MemoryPostCard({
         )}
       </div>
 
-      {photos.length > 1 && (
-        <div className="carousel-dots" aria-label="写真ページ">
-          {photos.map((photo, dotIndex) => (
+      {mediaItems.length > 1 && (
+        <div className="carousel-dots" aria-label="メディアページ">
+          {mediaItems.map((media, dotIndex) => (
             <button
-              key={photo.id}
+              key={media.id}
               type="button"
               className={dotIndex === index ? 'active' : ''}
               onClick={() => setIndex(dotIndex)}
-              aria-label={`${dotIndex + 1}枚目を表示`}
+              aria-label={`${dotIndex + 1}件目を表示`}
             />
           ))}
         </div>
@@ -129,18 +159,21 @@ export default function MemoryPostCard({
         </div>
 
         <div className="memory-card-actions">
-          {isViewer && currentPhoto && (
+          {isViewer && currentMedia && (
             <button
               type="button"
               className="download-photo-button"
               onClick={() =>
                 onDownload(
-                  currentPhoto.photo_url,
-                  `harimaro-${post.memory_date}-${index + 1}.jpg`
+                  getMediaUrl(currentMedia),
+                  `harimaro-${post.memory_date}-${index + 1}.${mediaExtension(
+                    currentMedia,
+                    currentType === 'video' ? 'mp4' : 'jpg'
+                  )}`
                 )
               }
             >
-              ⬇ 写真を保存
+              ⬇ {currentType === 'video' ? '動画' : '写真'}を保存
             </button>
           )}
 

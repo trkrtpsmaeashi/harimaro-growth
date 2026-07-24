@@ -66,6 +66,13 @@ export default function App() {
           id,
           photo_url,
           photo_path,
+          media_url,
+          media_path,
+          media_type,
+          mime_type,
+          file_name,
+          file_size,
+          duration_seconds,
           sort_order
         )
       `)

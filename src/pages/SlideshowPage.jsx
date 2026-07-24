@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { formatDate } from '../lib/helpers';
+import MemoryMedia from '../components/MemoryMedia';
+import { getMediaType } from '../lib/media';
 
 function buildSlides(memories, filter, month, order) {
   let posts = memories;
@@ -13,9 +15,9 @@ function buildSlides(memories, filter, month, order) {
   }
 
   const slides = posts.flatMap((post) =>
-    (post.photos || []).map((photo, photoIndex) => ({
-      id: photo.id,
-      photo,
+    (post.photos || []).map((media, photoIndex) => ({
+      id: media.id,
+      media,
       photoIndex,
       post,
     }))
@@ -134,18 +136,18 @@ export default function SlideshowPage({ memories, onOpenMemory }) {
           <p className="eyebrow">SLIDESHOW</p>
           <h2>思い出スライドショー</h2>
           <p className="muted">
-            はりまろの写真を、アルバムのようにゆっくり眺められます。
+            はりまろの写真と動画を、アルバムのように眺められます。
           </p>
         </div>
 
-        <span className="count-pill">{slides.length}枚</span>
+        <span className="count-pill">{slides.length}件</span>
       </section>
 
       <section className="card slideshow-settings">
         <div>
-          <label>表示する写真</label>
+          <label>表示するメディア</label>
           <select value={filter} onChange={(event) => setFilter(event.target.value)}>
-            <option value="all">すべての写真</option>
+            <option value="all">すべての写真・動画</option>
             <option value="favorites">お気に入りだけ</option>
             <option value="month">選んだ月だけ</option>
           </select>
@@ -164,8 +166,8 @@ export default function SlideshowPage({ memories, onOpenMemory }) {
         <div>
           <label>並び順</label>
           <select value={order} onChange={(event) => setOrder(event.target.value)}>
-            <option value="oldest">古い写真から</option>
-            <option value="newest">新しい写真から</option>
+            <option value="oldest">古いものから</option>
+            <option value="newest">新しいものから</option>
           </select>
         </div>
 
@@ -191,11 +193,16 @@ export default function SlideshowPage({ memories, onOpenMemory }) {
       >
         {current ? (
           <>
-            <img
-              className="slideshow-image"
-              src={current.photo.photo_url}
+            <MemoryMedia
+              media={current.media}
+              className={
+                getMediaType(current.media) === 'video'
+                  ? 'slideshow-video'
+                  : 'slideshow-image'
+              }
+              controls={getMediaType(current.media) === 'video'}
+              autoPlay={false}
               alt={current.post.caption || 'はりまろの思い出'}
-              draggable="false"
             />
 
             <div className="slideshow-shade" />
@@ -247,8 +254,8 @@ export default function SlideshowPage({ memories, onOpenMemory }) {
         ) : (
           <div className="slideshow-empty">
             <span>🦔</span>
-            <h3>表示できる写真がありません</h3>
-            <p>条件を変更するか、Memoriesに写真を追加してね。</p>
+            <h3>表示できる写真・動画がありません</h3>
+            <p>条件を変更するか、Memoriesに写真や動画を追加してね。</p>
           </div>
         )}
       </section>

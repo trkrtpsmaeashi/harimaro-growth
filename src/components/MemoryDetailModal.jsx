@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import { formatDate } from '../lib/helpers';
+import MemoryMedia from './MemoryMedia';
+import { getMediaType } from '../lib/media';
 
 export default function MemoryDetailModal({
   post,
@@ -9,8 +11,9 @@ export default function MemoryDetailModal({
 }) {
   const [index, setIndex] = useState(initialIndex);
   const [touchStart, setTouchStart] = useState(null);
-  const photos = post?.photos || [];
-  const currentPhoto = photos[index];
+  const mediaItems = post?.photos || [];
+  const currentMedia = mediaItems[index];
+  const currentType = getMediaType(currentMedia);
 
   useEffect(() => {
     setIndex(initialIndex);
@@ -26,12 +29,12 @@ export default function MemoryDetailModal({
       if (event.key === 'Escape') onClose();
       if (event.key === 'ArrowLeft') {
         setIndex((current) =>
-          current === 0 ? Math.max(photos.length - 1, 0) : current - 1
+          current === 0 ? Math.max(mediaItems.length - 1, 0) : current - 1
         );
       }
       if (event.key === 'ArrowRight') {
         setIndex((current) =>
-          current >= photos.length - 1 ? 0 : current + 1
+          current >= mediaItems.length - 1 ? 0 : current + 1
         );
       }
     }
@@ -43,19 +46,19 @@ export default function MemoryDetailModal({
       window.removeEventListener('keydown', handleKey);
       document.body.classList.remove('modal-open');
     };
-  }, [post, photos.length, onClose]);
+  }, [post, mediaItems.length, onClose]);
 
   if (!post) return null;
 
   function previous() {
     setIndex((current) =>
-      current === 0 ? Math.max(photos.length - 1, 0) : current - 1
+      current === 0 ? Math.max(mediaItems.length - 1, 0) : current - 1
     );
   }
 
   function next() {
     setIndex((current) =>
-      current >= photos.length - 1 ? 0 : current + 1
+      current >= mediaItems.length - 1 ? 0 : current + 1
     );
   }
 
@@ -104,23 +107,28 @@ export default function MemoryDetailModal({
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
         >
-          {currentPhoto ? (
-            <img
-              src={currentPhoto.photo_url}
+          {currentMedia ? (
+            <MemoryMedia
+              media={currentMedia}
+              className={
+                currentType === 'video'
+                  ? 'memory-detail-video'
+                  : 'memory-detail-image'
+              }
+              controls={currentType === 'video'}
               alt={`はりまろの思い出 ${index + 1}`}
-              draggable="false"
             />
           ) : (
             <div className="memory-detail-empty">🦔</div>
           )}
 
-          {photos.length > 1 && (
+          {mediaItems.length > 1 && (
             <>
               <button
                 type="button"
                 className="detail-arrow detail-arrow-left"
                 onClick={previous}
-                aria-label="前の写真"
+                aria-label="前のメディア"
               >
                 ‹
               </button>
@@ -129,27 +137,33 @@ export default function MemoryDetailModal({
                 type="button"
                 className="detail-arrow detail-arrow-right"
                 onClick={next}
-                aria-label="次の写真"
+                aria-label="次のメディア"
               >
                 ›
               </button>
 
               <span className="detail-photo-count">
-                {index + 1} / {photos.length}
+                {index + 1} / {mediaItems.length}
               </span>
             </>
           )}
+
+          {currentMedia && (
+            <span className="detail-media-badge">
+              {currentType === 'video' ? '🎥 動画' : '📷 写真'}
+            </span>
+          )}
         </div>
 
-        {photos.length > 1 && (
+        {mediaItems.length > 1 && (
           <div className="detail-dots">
-            {photos.map((photo, dotIndex) => (
+            {mediaItems.map((media, dotIndex) => (
               <button
-                key={photo.id}
+                key={media.id}
                 type="button"
                 className={dotIndex === index ? 'active' : ''}
                 onClick={() => setIndex(dotIndex)}
-                aria-label={`${dotIndex + 1}枚目`}
+                aria-label={`${dotIndex + 1}件目`}
               />
             ))}
           </div>
@@ -162,13 +176,15 @@ export default function MemoryDetailModal({
               <p>{post.caption || 'ひとことなし'}</p>
             </div>
 
-            <button
-              type="button"
-              className={`detail-favorite-button ${post.is_favorite ? 'active' : ''}`}
-              onClick={() => onToggleFavorite(post)}
-            >
-              {post.is_favorite ? '❤️ お気に入り' : '🤍 お気に入りに追加'}
-            </button>
+            {onToggleFavorite && (
+              <button
+                type="button"
+                className={`detail-favorite-button ${post.is_favorite ? 'active' : ''}`}
+                onClick={() => onToggleFavorite(post)}
+              >
+                {post.is_favorite ? '❤️ お気に入り' : '🤍 お気に入りに追加'}
+              </button>
+            )}
           </div>
 
           <div className="tag-list">

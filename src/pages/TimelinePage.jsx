@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { formatDate, today } from '../lib/helpers';
+import { getMediaType, getMediaUrl } from '../lib/media';
+import MemoryMedia from '../components/MemoryMedia';
 
 const EVENT_TYPES = [
   ['welcome', '🏠', 'お迎え'],
@@ -478,8 +480,8 @@ export default function TimelinePage({
                             <div className="timeline-card-content">
                               {item.photos?.[0] && (
                                 <span className="timeline-thumb">
-                                  <img
-                                    src={item.photos[0].photo_url}
+                                  <MemoryMedia
+                                    media={item.photos[0]}
                                     alt={item.caption || 'はりまろの思い出'}
                                   />
                                 </span>
@@ -487,7 +489,7 @@ export default function TimelinePage({
 
                               <div>
                                 <strong>
-                                  Memories・{item.photos?.length || 0}枚
+                                  Memories・{item.photos?.length || 0}件
                                 </strong>
                                 <p>{item.caption || 'ひとことなし'}</p>
                                 <div className="tag-list">
@@ -538,10 +540,10 @@ export default function TimelinePage({
                                 <button
                                   key={photo.id}
                                   type="button"
-                                  onClick={() => onPhoto(photo.photo_url)}
+                                  onClick={() => onPhoto(getMediaUrl(photo))}
                                 >
                                   <img
-                                    src={photo.photo_url}
+                                    src={getMediaUrl(photo)}
                                     alt={item.title}
                                   />
                                 </button>

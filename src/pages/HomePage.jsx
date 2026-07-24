@@ -1,5 +1,7 @@
 import { formatDate } from '../lib/helpers';
 import RecordCard from '../components/RecordCard';
+import { getMediaType, getMediaUrl } from '../lib/media';
+import MemoryMedia from '../components/MemoryMedia';
 
 function Summary({ value, label }) {
   return (
@@ -162,8 +164,8 @@ export default function HomePage({
             className="hero-memory-photo"
             onClick={() => onOpenMemory(latestMemory, 0)}
           >
-            <img
-              src={latestMemory.photos[0].photo_url}
+            <MemoryMedia
+              media={latestMemory.photos[0]}
               alt="最新のはりまろ"
             />
             <span>最新の思い出を見る</span>
@@ -188,7 +190,7 @@ export default function HomePage({
         <article className="memory-summary-card">
           <span>📷</span>
           <strong>{currentMonthPhotoCount}枚</strong>
-          <small>今月の写真</small>
+          <small>今月のメディア</small>
         </article>
 
         <article className="memory-summary-card">
@@ -280,10 +282,10 @@ export default function HomePage({
                 onClick={() => onOpenMemory(memory, 0)}
               >
                 {memory.photos?.[0] ? (
-                  <img
-                    src={memory.photos[0].photo_url}
-                    alt={memory.caption || 'はりまろの思い出'}
-                  />
+                  <MemoryMedia
+                  media={memory.photos[0]}
+                  alt={memory.caption || 'はりまろの思い出'}
+                />
                 ) : (
                   <span>🦔</span>
                 )}
@@ -313,8 +315,8 @@ export default function HomePage({
               onClick={() => onOpenMemory(memory, 0)}
             >
               {memory.photos?.[0] ? (
-                <img
-                  src={memory.photos[0].photo_url}
+                <MemoryMedia
+                  media={memory.photos[0]}
                   alt={memory.caption || 'はりまろの思い出'}
                 />
               ) : (

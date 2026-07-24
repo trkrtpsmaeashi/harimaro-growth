@@ -1,5 +1,7 @@
 import { useMemo, useState } from 'react';
 import { formatDate } from '../lib/helpers';
+import { getMediaType, getMediaUrl } from '../lib/media';
+import MemoryMedia from '../components/MemoryMedia';
 
 const WEEKDAYS = ['日', '月', '火', '水', '木', '金', '土'];
 
@@ -158,7 +160,7 @@ export default function CalendarPage({
         <article>
           <span>🖼️</span>
           <strong>{monthPhotoCount}枚</strong>
-          <small>今月の写真</small>
+          <small>今月のメディア</small>
         </article>
 
         <article>
@@ -250,25 +252,37 @@ export default function CalendarPage({
                   )}
                 </span>
 
-                {(dayMemories[0]?.photos?.[0]?.photo_url ||
-                  dayEvents.find((event) => event.photos?.[0]?.photo_url)?.photos?.[0]?.photo_url ||
-                  dayRecords.find((record) => record.photo_url)?.photo_url) && (
-                  <img
-                    className={`calendar-day-thumb ${
-                      dayMemories[0]?.photos?.[0]?.photo_url
-                        ? 'memory-background'
-                        : dayEvents.find((event) => event.photos?.[0]?.photo_url)
-                        ? 'event-background'
-                        : 'record-background'
-                    }`}
-                    src={
-                      dayMemories[0]?.photos?.[0]?.photo_url ||
-                      dayEvents.find((event) => event.photos?.[0]?.photo_url)?.photos?.[0]?.photo_url ||
-                      dayRecords.find((record) => record.photo_url)?.photo_url
-                    }
-                    alt=""
-                  />
-                )}
+                {(() => {
+                  const memoryImage = (dayMemories[0]?.photos || []).find(
+                    (media) => getMediaType(media) === 'image'
+                  );
+                  const eventImage = dayEvents.find(
+                    (event) => event.photos?.[0]?.photo_url
+                  )?.photos?.[0];
+                  const recordImage = dayRecords.find(
+                    (record) => record.photo_url
+                  );
+                  const backgroundUrl =
+                    getMediaUrl(memoryImage) ||
+                    eventImage?.photo_url ||
+                    recordImage?.photo_url;
+
+                  if (!backgroundUrl) return null;
+
+                  return (
+                    <img
+                      className={`calendar-day-thumb ${
+                        memoryImage
+                          ? 'memory-background'
+                          : eventImage
+                          ? 'event-background'
+                          : 'record-background'
+                      }`}
+                      src={backgroundUrl}
+                      alt=""
+                    />
+                  );
+                })()}
               </button>
             );
           })}
@@ -345,10 +359,10 @@ export default function CalendarPage({
                     onClick={() => onOpenMemory(memory, 0)}
                   >
                     {memory.photos?.[0] ? (
-                      <img
-                        src={memory.photos[0].photo_url}
-                        alt={memory.caption || 'はりまろの思い出'}
-                      />
+                      <MemoryMedia
+                  media={memory.photos[0]}
+                  alt={memory.caption || 'はりまろの思い出'}
+                />
                     ) : (
                       <span>🦔</span>
                     )}
@@ -387,9 +401,9 @@ export default function CalendarPage({
                           <button
                             type="button"
                             key={photo.id}
-                            onClick={() => onPhoto(photo.photo_url)}
+                            onClick={() => onPhoto(getMediaUrl(photo))}
                           >
-                            <img src={photo.photo_url} alt={event.title} />
+                            <img src={getMediaUrl(photo)} alt={event.title} />
                           </button>
                         ))}
                       </div>
