@@ -316,7 +316,9 @@ export default function ChecklistPage({
                 placeholder="例：ご飯をあげた"
                 onChange={(event) => setTitle(event.target.value)}
                 onKeyDown={(event) => {
-                  if (event.key === 'Enter') addItem();
+                  if (event.key === 'Enter') {
+                    event.preventDefault();
+                  }
                 }}
               />
             </div>
