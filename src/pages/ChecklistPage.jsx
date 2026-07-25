@@ -211,8 +211,8 @@ export default function ChecklistPage({
 
   return (
     <>
-      <section className="page-heading checklist-heading">
-        <div>
+      <section className="page-heading checklist-heading checklist-heading-v34">
+        <div className="checklist-heading-copy">
           <p className="eyebrow">DAILY CHECK</p>
           <h2>毎日のチェック</h2>
           <p className="muted">
@@ -220,9 +220,21 @@ export default function ChecklistPage({
           </p>
         </div>
 
-        <span className="checklist-date-pill">
-          {formatDateWithWeekday(selectedDate)}
-        </span>
+        <div className="checklist-heading-actions">
+          {canEdit && (
+            <button
+              type="button"
+              className="checklist-heading-add"
+              onClick={() => setCreateOpen(true)}
+            >
+              ＋追加
+            </button>
+          )}
+
+          <span className="checklist-date-pill">
+            {formatDateWithWeekday(selectedDate)}
+          </span>
+        </div>
       </section>
 
       <section className="card checklist-day-card">
@@ -357,25 +369,6 @@ export default function ChecklistPage({
 
         <p className="message">{message}</p>
       </section>
-
-      {canEdit && (
-        <section className="card checklist-add-launcher">
-          <div>
-            <p className="eyebrow">CUSTOM ITEM</p>
-            <h2>チェック項目を追加</h2>
-            <p className="muted">
-              自分で決めた項目と絵文字を登録できます。
-            </p>
-          </div>
-
-          <button
-            type="button"
-            onClick={() => setCreateOpen(true)}
-          >
-            ＋ 項目を登録
-          </button>
-        </section>
-      )}
 
       {canEdit && createOpen && (
         <div

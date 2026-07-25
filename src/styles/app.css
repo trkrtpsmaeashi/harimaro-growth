@@ -3656,3 +3656,66 @@ body.modal-open{
     grid-template-columns:1fr;
   }
 }
+
+
+/* Checklist header add button v3.4 */
+.checklist-heading-v34{
+  display:grid;
+  grid-template-columns:1fr auto;
+  align-items:start;
+  gap:20px;
+}
+.checklist-heading-copy h2{
+  margin:4px 0 10px;
+}
+.checklist-heading-copy p{
+  margin-bottom:0;
+}
+.checklist-heading-actions{
+  display:grid;
+  justify-items:end;
+  gap:10px;
+}
+.checklist-heading-add{
+  padding:9px 14px;
+  border:0;
+  border-radius:12px;
+  background:var(--brown);
+  color:#fff;
+  font-weight:800;
+}
+.checklist-heading-v34 .checklist-date-pill{
+  white-space:nowrap;
+}
+@media(max-width:720px){
+  .checklist-heading-v34{
+    grid-template-columns:1fr auto;
+    align-items:start;
+  }
+  .checklist-heading-copy p{
+    max-width:520px;
+  }
+}
+@media(max-width:520px){
+  .checklist-heading-v34{
+    grid-template-columns:minmax(0,1fr) auto;
+    gap:12px;
+  }
+  .checklist-heading-copy h2{
+    font-size:28px;
+  }
+  .checklist-heading-copy .muted{
+    grid-column:1 / -1;
+  }
+  .checklist-heading-actions{
+    gap:8px;
+  }
+  .checklist-heading-add{
+    padding:8px 12px;
+    font-size:13px;
+  }
+  .checklist-heading-v34 .checklist-date-pill{
+    padding:7px 10px;
+    font-size:11px;
+  }
+}
