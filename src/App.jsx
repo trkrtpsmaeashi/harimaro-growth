@@ -22,6 +22,11 @@ import {
   loadNotificationSettings,
   saveNotificationSettings,
 } from './lib/notificationSettings';
+import {
+  loadHomeLayout,
+  saveHomeLayout,
+  resetHomeLayout,
+} from './lib/homeLayoutSettings';
 
 export default function App() {
   const [user, setUser] = useState(null);
@@ -43,6 +48,7 @@ export default function App() {
   const [notificationSettings, setNotificationSettings] = useState(
     loadNotificationSettings
   );
+  const [homeLayout, setHomeLayout] = useState(loadHomeLayout);
 
   async function loadRecords(householdId = household?.household_id) {
     if (!householdId) return;
@@ -181,6 +187,15 @@ export default function App() {
     saveNotificationSettings(nextSettings);
   }
 
+  function updateHomeLayout(nextLayout) {
+    setHomeLayout(nextLayout);
+    saveHomeLayout(nextLayout);
+  }
+
+  function restoreDefaultHomeLayout() {
+    setHomeLayout(resetHomeLayout());
+  }
+
   async function deleteRecord(id, photoPath) {
     if (!confirm('この記録を削除する？')) return;
     if (photoPath) await supabase.storage.from('harimaro-photos').remove([photoPath]);
@@ -244,6 +259,7 @@ export default function App() {
         memories={memories}
         checkItems={checkItems}
         checkLogs={checkLogs}
+        homeLayout={homeLayout}
         canEdit={canEdit}
         isViewer={isViewer}
         onReload={loadMemories}
@@ -346,6 +362,9 @@ export default function App() {
         canEdit={canEdit}
         isViewer={isViewer}
         onHouseholdChanged={refreshHousehold}
+        homeLayout={homeLayout}
+        onChangeHomeLayout={updateHomeLayout}
+        onResetHomeLayout={restoreDefaultHomeLayout}
       />
     );
   } else {
@@ -355,6 +374,7 @@ export default function App() {
         memories={memories}
         checkItems={checkItems}
         checkLogs={checkLogs}
+        homeLayout={homeLayout}
         canEdit={canEdit}
         onNavigate={setPage}
         notificationSettings={notificationSettings}

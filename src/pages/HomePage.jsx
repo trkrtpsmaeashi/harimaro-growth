@@ -32,6 +32,7 @@ export default function HomePage({
   memories,
   checkItems,
   checkLogs,
+  homeLayout,
   onNavigate,
   onPhoto,
   onDelete,
@@ -136,33 +137,32 @@ export default function HomePage({
     });
   }
 
-  return (
-    <>
-
-      {canEdit && reminders.length > 0 && (
-        <section className="home-reminder-stack">
-          {reminders.map((reminder) => (
-            <article
-              key={`${reminder.action}-${reminder.title}`}
-              className="home-reminder-card"
+  const sectionMap = {
+    reminders: canEdit && reminders.length > 0 ? (
+      <section className="home-reminder-stack">
+        {reminders.map((reminder) => (
+          <article
+            key={`${reminder.action}-${reminder.title}`}
+            className="home-reminder-card"
+          >
+            <span>{reminder.icon}</span>
+            <div>
+              <p className="eyebrow">REMINDER</p>
+              <h3>{reminder.title}</h3>
+              <p>{reminder.text}</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => onNavigate(reminder.action)}
             >
-              <span>{reminder.icon}</span>
-              <div>
-                <p className="eyebrow">REMINDER</p>
-                <h3>{reminder.title}</h3>
-                <p>{reminder.text}</p>
-              </div>
-              <button
-                type="button"
-                onClick={() => onNavigate(reminder.action)}
-              >
-                {reminder.button}
-              </button>
-            </article>
-          ))}
-        </section>
-      )}
+              {reminder.button}
+            </button>
+          </article>
+        ))}
+      </section>
+    ) : null,
 
+    checklist: (
       <section className="home-checklist-card">
         <div className="home-checklist-main">
           <span>☑️</span>
@@ -186,7 +186,9 @@ export default function HomePage({
           チェックする →
         </button>
       </section>
+    ),
 
+    hero: (
       <section className="dashboard-hero dashboard-hero-v09">
         <div>
           <p className="eyebrow">HARIMARO TODAY</p>
@@ -222,7 +224,9 @@ export default function HomePage({
           </div>
         )}
       </section>
+    ),
 
+    weightSummary: (
       <section className="summary-grid">
         <Summary value={latest ? `${latest.weight_g}g` : '-'} label="最新体重" />
         <Summary
@@ -231,7 +235,9 @@ export default function HomePage({
         />
         <Summary value={latest ? formatDate(latest.recorded_on) : '-'} label="最終記録" />
       </section>
+    ),
 
+    memorySummary: (
       <section className="memory-summary-grid">
         <article className="memory-summary-card">
           <span>📷</span>
@@ -251,7 +257,9 @@ export default function HomePage({
           <small>{topTag ? `${topTag[1]}回・人気タグ` : '人気タグ'}</small>
         </article>
       </section>
+    ),
 
+    dashboard: (
       <section className="dashboard-grid">
         <article className="card">
           <p className="eyebrow">LATEST RECORD</p>
@@ -309,39 +317,41 @@ export default function HomePage({
           </div>
         </article>
       </section>
+    ),
 
-      {todayMemories.length > 0 && (
-        <section className="card on-this-day-card">
-          <div className="section-heading">
-            <div>
-              <p className="eyebrow">ON THIS DAY</p>
-              <h2>今日と同じ日の思い出</h2>
-            </div>
-            <span>{todayMemories.length}投稿</span>
+    onThisDay: todayMemories.length > 0 ? (
+      <section className="card on-this-day-card">
+        <div className="section-heading">
+          <div>
+            <p className="eyebrow">ON THIS DAY</p>
+            <h2>今日と同じ日の思い出</h2>
           </div>
+          <span>{todayMemories.length}投稿</span>
+        </div>
 
-          <div className="home-memory-strip">
-            {todayMemories.slice(0, 4).map((memory) => (
-              <button
-                key={memory.id}
-                className="home-memory-thumb"
-                onClick={() => onOpenMemory(memory, 0)}
-              >
-                {memory.photos?.[0] ? (
-                  <MemoryMedia
+        <div className="home-memory-strip">
+          {todayMemories.slice(0, 4).map((memory) => (
+            <button
+              key={memory.id}
+              className="home-memory-thumb"
+              onClick={() => onOpenMemory(memory, 0)}
+            >
+              {memory.photos?.[0] ? (
+                <MemoryMedia
                   media={memory.photos[0]}
                   alt={memory.caption || 'はりまろの思い出'}
                 />
-                ) : (
-                  <span>🦔</span>
-                )}
-                <small>{formatDate(memory.memory_date)}</small>
-              </button>
-            ))}
-          </div>
-        </section>
-      )}
+              ) : (
+                <span>🦔</span>
+              )}
+              <small>{formatDate(memory.memory_date)}</small>
+            </button>
+          ))}
+        </div>
+      </section>
+    ) : null,
 
+    recentMemories: (
       <section className="card">
         <div className="section-heading">
           <div>
@@ -377,7 +387,9 @@ export default function HomePage({
           )}
         </div>
       </section>
+    ),
 
+    recentRecords: (
       <section className="card">
         <div className="section-heading">
           <div>
@@ -398,6 +410,18 @@ export default function HomePage({
           />
         ))}
       </section>
+    ),
+  };
+
+  return (
+    <>
+      {(homeLayout || [])
+        .filter((item) => item.visible)
+        .map((item) => (
+          <div key={item.id} className={`home-section home-section-${item.id}`}>
+            {sectionMap[item.id] || null}
+          </div>
+        ))}
     </>
   );
 }

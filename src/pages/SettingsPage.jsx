@@ -23,6 +23,9 @@ export default function SettingsPage({
   canEdit,
   isViewer,
   onHouseholdChanged,
+  homeLayout,
+  onChangeHomeLayout,
+  onResetHomeLayout,
 }) {
   const [inviteCode, setInviteCode] = useState('');
   const [joinCode, setJoinCode] = useState('');
@@ -207,6 +210,29 @@ export default function SettingsPage({
     } catch (error) {
       setHouseholdMessage(error.message);
     }
+  }
+
+  function moveHomeCard(index, direction) {
+    const targetIndex = index + direction;
+
+    if (targetIndex < 0 || targetIndex >= homeLayout.length) return;
+
+    const next = [...homeLayout];
+    [next[index], next[targetIndex]] = [next[targetIndex], next[index]];
+    onChangeHomeLayout(next);
+  }
+
+  function toggleHomeCard(id) {
+    onChangeHomeLayout(
+      homeLayout.map((item) =>
+        item.id === id ? { ...item, visible: !item.visible } : item
+      )
+    );
+  }
+
+  function resetHomeCards() {
+    if (!confirm('ホーム画面の並び順と表示設定を初期状態に戻す？')) return;
+    onResetHomeLayout();
   }
 
   async function enableBrowserNotifications() {
@@ -438,6 +464,74 @@ export default function SettingsPage({
         </div>
 
         <p className="message">{householdMessage}</p>
+      </section>
+
+
+      <section className="card home-layout-settings-card">
+        <div className="section-heading">
+          <div>
+            <p className="eyebrow">HOME LAYOUT</p>
+            <h2>ホーム画面のカスタマイズ</h2>
+          </div>
+
+          <button
+            type="button"
+            className="home-layout-reset"
+            onClick={resetHomeCards}
+          >
+            ↺ デフォルトに戻す
+          </button>
+        </div>
+
+        <p className="notification-note">
+          ↑↓で並び替え、目のボタンで表示・非表示を切り替えられます。
+          この設定は今使っている端末に保存されます。
+        </p>
+
+        <div className="home-layout-list">
+          {homeLayout.map((item, index) => (
+            <article
+              key={item.id}
+              className={`home-layout-item ${!item.visible ? 'hidden-card' : ''}`}
+            >
+              <span className="home-layout-handle">≡</span>
+
+              <div>
+                <strong>{item.label}</strong>
+                <small>{item.visible ? 'ホームに表示中' : '非表示'}</small>
+              </div>
+
+              <div className="home-layout-actions">
+                <button
+                  type="button"
+                  disabled={index === 0}
+                  onClick={() => moveHomeCard(index, -1)}
+                  aria-label={`${item.label}を上へ`}
+                >
+                  ↑
+                </button>
+
+                <button
+                  type="button"
+                  disabled={index === homeLayout.length - 1}
+                  onClick={() => moveHomeCard(index, 1)}
+                  aria-label={`${item.label}を下へ`}
+                >
+                  ↓
+                </button>
+
+                <button
+                  type="button"
+                  className={item.visible ? 'visible' : 'hidden'}
+                  onClick={() => toggleHomeCard(item.id)}
+                  aria-label={`${item.label}の表示を切り替え`}
+                >
+                  {item.visible ? '👁' : '🚫'}
+                </button>
+              </div>
+            </article>
+          ))}
+        </div>
       </section>
 
       <section className="card notification-settings-card">
