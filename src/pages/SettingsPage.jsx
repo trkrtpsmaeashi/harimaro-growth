@@ -6,7 +6,9 @@ import {
   loadHouseholdMembers,
   removeHouseholdMember,
   changeHouseholdMemberRole,
+  deleteMyAccount,
 } from '../lib/household';
+import HomeLayoutEditor from '../components/HomeLayoutEditor';
 import {
   canShowBrowserNotifications,
   requestNotificationPermission,
@@ -35,6 +37,11 @@ export default function SettingsPage({
   const [householdMessage, setHouseholdMessage] = useState('');
   const [members, setMembers] = useState([]);
   const [inviteRole, setInviteRole] = useState('editor');
+  const [homeEditorOpen, setHomeEditorOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleteText, setDeleteText] = useState('');
+  const [deleteMessage, setDeleteMessage] = useState('');
+  const [deletingAccount, setDeletingAccount] = useState(false);
   const permission =
     canShowBrowserNotifications() ? Notification.permission : 'unsupported';
 
@@ -212,27 +219,33 @@ export default function SettingsPage({
     }
   }
 
-  function moveHomeCard(index, direction) {
-    const targetIndex = index + direction;
+  async function permanentlyDeleteAccount() {
+    if (deleteText !== '削除') {
+      setDeleteMessage('確認欄に「削除」と入力してね。');
+      return;
+    }
 
-    if (targetIndex < 0 || targetIndex >= homeLayout.length) return;
+    if (
+      household?.my_role === 'owner' &&
+      Number(household?.member_count || 1) > 1
+    ) {
+      setDeleteMessage(
+        'オーナーは、先に他のメンバーを共有グループから削除してください。'
+      );
+      return;
+    }
 
-    const next = [...homeLayout];
-    [next[index], next[targetIndex]] = [next[targetIndex], next[index]];
-    onChangeHomeLayout(next);
-  }
+    setDeletingAccount(true);
+    setDeleteMessage('アカウントを削除中…');
 
-  function toggleHomeCard(id) {
-    onChangeHomeLayout(
-      homeLayout.map((item) =>
-        item.id === id ? { ...item, visible: !item.visible } : item
-      )
-    );
-  }
-
-  function resetHomeCards() {
-    if (!confirm('ホーム画面の並び順と表示設定を初期状態に戻す？')) return;
-    onResetHomeLayout();
+    try {
+      await deleteMyAccount(deleteText);
+      localStorage.clear();
+      await window.location.reload();
+    } catch (error) {
+      setDeleteMessage(error.message);
+      setDeletingAccount(false);
+    }
   }
 
   async function enableBrowserNotifications() {
@@ -467,71 +480,21 @@ export default function SettingsPage({
       </section>
 
 
-      <section className="card home-layout-settings-card">
-        <div className="section-heading">
-          <div>
-            <p className="eyebrow">HOME LAYOUT</p>
-            <h2>ホーム画面のカスタマイズ</h2>
-          </div>
-
-          <button
-            type="button"
-            className="home-layout-reset"
-            onClick={resetHomeCards}
-          >
-            ↺ デフォルトに戻す
-          </button>
+      <section className="card home-layout-launcher-card">
+        <div>
+          <p className="eyebrow">HOME LAYOUT</p>
+          <h2>ホーム画面のカスタマイズ</h2>
+          <p className="notification-note">
+            小さなホーム画面を見ながら、カードをドラッグして配置できます。
+          </p>
         </div>
 
-        <p className="notification-note">
-          ↑↓で並び替え、目のボタンで表示・非表示を切り替えられます。
-          この設定は今使っている端末に保存されます。
-        </p>
-
-        <div className="home-layout-list">
-          {homeLayout.map((item, index) => (
-            <article
-              key={item.id}
-              className={`home-layout-item ${!item.visible ? 'hidden-card' : ''}`}
-            >
-              <span className="home-layout-handle">≡</span>
-
-              <div>
-                <strong>{item.label}</strong>
-                <small>{item.visible ? 'ホームに表示中' : '非表示'}</small>
-              </div>
-
-              <div className="home-layout-actions">
-                <button
-                  type="button"
-                  disabled={index === 0}
-                  onClick={() => moveHomeCard(index, -1)}
-                  aria-label={`${item.label}を上へ`}
-                >
-                  ↑
-                </button>
-
-                <button
-                  type="button"
-                  disabled={index === homeLayout.length - 1}
-                  onClick={() => moveHomeCard(index, 1)}
-                  aria-label={`${item.label}を下へ`}
-                >
-                  ↓
-                </button>
-
-                <button
-                  type="button"
-                  className={item.visible ? 'visible' : 'hidden'}
-                  onClick={() => toggleHomeCard(item.id)}
-                  aria-label={`${item.label}の表示を切り替え`}
-                >
-                  {item.visible ? '👁' : '🚫'}
-                </button>
-              </div>
-            </article>
-          ))}
-        </div>
+        <button
+          type="button"
+          onClick={() => setHomeEditorOpen(true)}
+        >
+          🏠 ホーム画面を編集
+        </button>
       </section>
 
       <section className="card notification-settings-card">
@@ -640,6 +603,100 @@ export default function SettingsPage({
           </button>
         </div>
       </section>
+
+      <section className="card danger-zone-card">
+        <div>
+          <p className="eyebrow">DANGER ZONE</p>
+          <h2>アカウント削除</h2>
+          <p>
+            使用しないアカウントを完全に削除します。削除後は元に戻せません。
+          </p>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => {
+            setDeleteText('');
+            setDeleteMessage('');
+            setDeleteOpen(true);
+          }}
+        >
+          アカウントを削除
+        </button>
+      </section>
+
+      <HomeLayoutEditor
+        open={homeEditorOpen}
+        layout={homeLayout}
+        onClose={() => setHomeEditorOpen(false)}
+        onSave={onChangeHomeLayout}
+        onReset={onResetHomeLayout}
+      />
+
+      {deleteOpen && (
+        <div
+          className="account-delete-backdrop"
+          onClick={() => !deletingAccount && setDeleteOpen(false)}
+        >
+          <section
+            className="account-delete-modal"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <span className="account-delete-icon">⚠️</span>
+            <h2>アカウントを削除しますか？</h2>
+
+            <p>
+              ログイン情報が完全に削除されます。
+              {household?.my_role === 'owner'
+                ? ' メンバーがいない個人グループの場合、保存した記録や写真のデータも削除されます。'
+                : ' 共有グループに残した投稿はグループ側に残ります。'}
+            </p>
+
+            {household?.my_role === 'owner' &&
+              Number(household?.member_count || 1) > 1 && (
+                <div className="account-delete-warning">
+                  オーナーのアカウントは、他のメンバーが参加している間は削除できません。
+                  先にメンバー一覧から全員を削除してください。
+                </div>
+              )}
+
+            <label>確認のため「削除」と入力</label>
+            <input
+              value={deleteText}
+              disabled={deletingAccount}
+              placeholder="削除"
+              onChange={(event) => setDeleteText(event.target.value)}
+            />
+
+            <p className="message">{deleteMessage}</p>
+
+            <div className="account-delete-actions">
+              <button
+                type="button"
+                className="secondary-button"
+                disabled={deletingAccount}
+                onClick={() => setDeleteOpen(false)}
+              >
+                キャンセル
+              </button>
+
+              <button
+                type="button"
+                disabled={
+                  deletingAccount ||
+                  deleteText !== '削除' ||
+                  (household?.my_role === 'owner' &&
+                    Number(household?.member_count || 1) > 1)
+                }
+                onClick={permanentlyDeleteAccount}
+              >
+                完全に削除する
+              </button>
+            </div>
+          </section>
+        </div>
+      )}
+
     </>
   );
 }

@@ -3813,3 +3813,321 @@ body.modal-open{
     justify-content:flex-end;
   }
 }
+
+
+/* Visual home editor + account deletion v4.0 */
+.home-layout-launcher-card{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:18px;
+  margin-top:16px;
+}
+.home-layout-launcher-card h2{
+  margin:4px 0 7px;
+}
+.home-layout-launcher-card p{
+  margin:0;
+}
+.home-layout-launcher-card > button{
+  flex:0 0 auto;
+  padding:12px 16px;
+  border:0;
+  border-radius:13px;
+  background:var(--brown);
+  color:#fff;
+  font-weight:800;
+}
+.home-editor-backdrop{
+  position:fixed;
+  inset:0;
+  z-index:300;
+  display:grid;
+  place-items:center;
+  padding:18px;
+  background:rgba(31,26,22,.58);
+  backdrop-filter:blur(5px);
+}
+.home-editor-modal{
+  width:min(900px,100%);
+  max-height:94dvh;
+  overflow-y:auto;
+  border-radius:25px;
+  background:#f8f4ef;
+  box-shadow:0 28px 75px rgba(20,15,12,.35);
+}
+.home-editor-header{
+  position:sticky;
+  top:0;
+  z-index:5;
+  display:flex;
+  justify-content:space-between;
+  gap:18px;
+  padding:20px;
+  border-bottom:1px solid var(--border);
+  background:rgba(248,244,239,.96);
+  backdrop-filter:blur(10px);
+}
+.home-editor-header h2{
+  margin:4px 0 6px;
+}
+.home-editor-header p:last-child{
+  margin:0;
+  color:var(--muted);
+}
+.home-editor-header > button{
+  width:40px;
+  height:40px;
+  padding:0;
+  border:0;
+  border-radius:50%;
+  background:#ebe5de;
+  font-size:23px;
+}
+.home-editor-workspace{
+  display:grid;
+  grid-template-columns:minmax(290px,430px) 1fr;
+  gap:22px;
+  padding:22px;
+}
+.home-phone-preview{
+  padding:9px;
+  border:7px solid #403a36;
+  border-radius:34px;
+  background:#f7f3ed;
+  box-shadow:0 14px 34px rgba(42,31,24,.2);
+}
+.home-phone-top{
+  display:flex;
+  justify-content:space-between;
+  padding:10px 10px 13px;
+  font-size:12px;
+  font-weight:800;
+}
+.home-phone-top small{
+  color:var(--muted);
+}
+.home-preview-list{
+  display:grid;
+  gap:7px;
+  padding:0 5px 9px;
+}
+.home-preview-card{
+  display:grid;
+  grid-template-columns:auto auto 1fr auto;
+  align-items:center;
+  gap:9px;
+  min-height:61px;
+  padding:9px;
+  border:1px solid #ddd4ca;
+  border-radius:14px;
+  background:#fff;
+  box-shadow:0 4px 12px rgba(62,48,39,.06);
+  transition:transform .15s,opacity .15s;
+}
+.home-preview-card.is-dragging{
+  opacity:.45;
+  transform:scale(.98);
+}
+.home-preview-card.is-hidden{
+  border-style:dashed;
+  opacity:.48;
+  background:#ece9e5;
+}
+.home-preview-drag,
+.home-preview-visibility{
+  width:32px;
+  height:32px;
+  display:grid;
+  place-items:center;
+  padding:0;
+  border:0;
+  border-radius:9px;
+  background:#f1ece6;
+}
+.home-preview-drag{
+  cursor:grab;
+  touch-action:none;
+}
+.home-preview-drag:active{
+  cursor:grabbing;
+}
+.home-preview-icon{
+  font-size:23px;
+}
+.home-preview-card strong,
+.home-preview-card small{
+  display:block;
+}
+.home-preview-card strong{
+  font-size:12px;
+}
+.home-preview-card small{
+  margin-top:2px;
+  color:var(--muted);
+  font-size:9px;
+}
+.home-editor-help{
+  align-self:start;
+  padding:18px;
+  border:1px solid var(--border);
+  border-radius:18px;
+  background:#fff;
+}
+.home-editor-help h3{
+  margin-top:0;
+}
+.home-editor-help p{
+  color:var(--muted);
+  line-height:1.7;
+}
+.home-editor-footer{
+  position:sticky;
+  bottom:0;
+  z-index:5;
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  padding:16px 20px;
+  border-top:1px solid var(--border);
+  background:rgba(248,244,239,.96);
+  backdrop-filter:blur(10px);
+}
+.home-editor-footer > div{
+  display:flex;
+  gap:8px;
+}
+.home-editor-footer button{
+  padding:11px 15px;
+  border:0;
+  border-radius:12px;
+  background:var(--brown);
+  color:#fff;
+  font-weight:800;
+}
+.home-editor-reset{
+  background:#eee7df!important;
+  color:#5e4c3e!important;
+}
+.danger-zone-card{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:18px;
+  margin-top:16px;
+  border-color:#eccaca;
+  background:#fffafa;
+}
+.danger-zone-card h2{
+  margin:4px 0 7px;
+  color:#922d2d;
+}
+.danger-zone-card p{
+  margin:0;
+  color:#7c6060;
+}
+.danger-zone-card > button{
+  flex:0 0 auto;
+  padding:11px 14px;
+  border:0;
+  border-radius:12px;
+  background:#b73737;
+  color:#fff;
+  font-weight:800;
+}
+.account-delete-backdrop{
+  position:fixed;
+  inset:0;
+  z-index:350;
+  display:grid;
+  place-items:center;
+  padding:18px;
+  background:rgba(35,24,24,.6);
+}
+.account-delete-modal{
+  width:min(520px,100%);
+  padding:24px;
+  border-radius:23px;
+  background:#fff;
+  box-shadow:0 25px 70px rgba(30,20,20,.35);
+}
+.account-delete-icon{
+  font-size:42px;
+}
+.account-delete-modal h2{
+  margin:8px 0;
+}
+.account-delete-modal > p{
+  color:var(--muted);
+  line-height:1.7;
+}
+.account-delete-warning{
+  padding:12px;
+  margin:12px 0;
+  border-radius:12px;
+  background:#fff0d9;
+  color:#83551e;
+  font-size:13px;
+  line-height:1.6;
+}
+.account-delete-actions{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:9px;
+  margin-top:17px;
+}
+.account-delete-actions button{
+  padding:12px;
+  border:0;
+  border-radius:12px;
+  background:#b73737;
+  color:#fff;
+  font-weight:800;
+}
+.account-delete-actions button:disabled{
+  cursor:not-allowed;
+  opacity:.42;
+}
+@media(max-width:720px){
+  .home-layout-launcher-card,
+  .danger-zone-card{
+    align-items:stretch;
+    flex-direction:column;
+  }
+  .home-layout-launcher-card > button,
+  .danger-zone-card > button{
+    width:100%;
+  }
+  .home-editor-workspace{
+    grid-template-columns:1fr;
+  }
+  .home-editor-help{
+    display:none;
+  }
+}
+@media(max-width:480px){
+  .home-editor-backdrop{
+    padding:0;
+  }
+  .home-editor-modal{
+    max-height:100dvh;
+    min-height:100dvh;
+    border-radius:0;
+  }
+  .home-editor-workspace{
+    padding:14px;
+  }
+  .home-phone-preview{
+    border-width:5px;
+  }
+  .home-editor-footer{
+    flex-direction:column;
+  }
+  .home-editor-footer > div,
+  .home-editor-footer button{
+    width:100%;
+  }
+  .account-delete-actions{
+    grid-template-columns:1fr;
+  }
+}

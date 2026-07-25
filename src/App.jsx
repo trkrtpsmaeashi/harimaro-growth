@@ -193,7 +193,9 @@ export default function App() {
   }
 
   function restoreDefaultHomeLayout() {
-    setHomeLayout(resetHomeLayout());
+    const next = resetHomeLayout();
+    setHomeLayout(next);
+    return next;
   }
 
   async function deleteRecord(id, photoPath) {

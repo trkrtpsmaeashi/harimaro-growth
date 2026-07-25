@@ -68,3 +68,13 @@ export async function changeHouseholdMemberRole(userId, role) {
   if (error) throw error;
   return data;
 }
+
+
+export async function deleteMyAccount(confirmText) {
+  const { data, error } = await supabase.rpc('delete_my_harimaro_account', {
+    confirmation_text: confirmText,
+  });
+
+  if (error) throw error;
+  return data;
+}
