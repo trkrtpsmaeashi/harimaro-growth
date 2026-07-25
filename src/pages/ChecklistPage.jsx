@@ -38,6 +38,7 @@ export default function ChecklistPage({
   const [title, setTitle] = useState('');
   const [icon, setIcon] = useState('✅');
   const [message, setMessage] = useState('');
+  const [createOpen, setCreateOpen] = useState(false);
 
   const activeItems = useMemo(
     () =>
@@ -140,7 +141,52 @@ export default function ChecklistPage({
 
     setTitle('');
     setIcon('✅');
+    setCreateOpen(false);
     setMessage('チェック項目を追加しました。');
+    await onReload();
+  }
+
+  async function moveItem(item, direction) {
+    if (!canEdit) return;
+
+    const currentIndex = activeItems.findIndex(
+      (candidate) => candidate.id === item.id
+    );
+    const targetIndex = currentIndex + direction;
+
+    if (currentIndex < 0 || targetIndex < 0 || targetIndex >= activeItems.length) {
+      return;
+    }
+
+    const targetItem = activeItems[targetIndex];
+    const currentSort = Number(item.sort_order) || currentIndex + 1;
+    const targetSort = Number(targetItem.sort_order) || targetIndex + 1;
+
+    setMessage('並び替え中…');
+
+    const { error: firstError } = await supabase
+      .from('harimaro_check_items')
+      .update({ sort_order: targetSort })
+      .eq('household_id', householdId)
+      .eq('id', item.id);
+
+    if (firstError) {
+      setMessage(firstError.message);
+      return;
+    }
+
+    const { error: secondError } = await supabase
+      .from('harimaro_check_items')
+      .update({ sort_order: currentSort })
+      .eq('household_id', householdId)
+      .eq('id', targetItem.id);
+
+    if (secondError) {
+      setMessage(secondError.message);
+      return;
+    }
+
+    setMessage('並び順を変更しました。');
     await onReload();
   }
 
@@ -264,14 +310,34 @@ export default function ChecklistPage({
                   </button>
 
                   {canEdit && (
-                    <button
-                      type="button"
-                      className="daily-check-remove"
-                      onClick={() => removeItem(item)}
-                      aria-label={`${item.title}を削除`}
-                    >
-                      ×
-                    </button>
+                    <div className="daily-check-actions">
+                      <button
+                        type="button"
+                        onClick={() => moveItem(item, -1)}
+                        disabled={activeItems[0]?.id === item.id}
+                        aria-label={`${item.title}を上へ`}
+                      >
+                        ↑
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => moveItem(item, 1)}
+                        disabled={activeItems[activeItems.length - 1]?.id === item.id}
+                        aria-label={`${item.title}を下へ`}
+                      >
+                        ↓
+                      </button>
+
+                      <button
+                        type="button"
+                        className="daily-check-remove"
+                        onClick={() => removeItem(item)}
+                        aria-label={`${item.title}を削除`}
+                      >
+                        ×
+                      </button>
+                    </div>
                   )}
                 </article>
               );
@@ -293,41 +359,87 @@ export default function ChecklistPage({
       </section>
 
       {canEdit && (
-        <section className="card checklist-create-card">
+        <section className="card checklist-add-launcher">
           <div>
             <p className="eyebrow">CUSTOM ITEM</p>
-            <h2>項目を追加</h2>
+            <h2>チェック項目を追加</h2>
+            <p className="muted">
+              自分で決めた項目と絵文字を登録できます。
+            </p>
           </div>
 
-          <div className="checklist-create-grid">
-            <div>
-              <label>アイコン</label>
-              <EmojiPicker value={icon} onChange={setIcon} />
-              <div className="checklist-icon-preview">
-                <span>{icon || '✅'}</span>
-                <small>現在のアイコン</small>
-              </div>
-            </div>
-
-            <div>
-              <label>項目名</label>
-              <input
-                value={title}
-                placeholder="例：ご飯をあげた"
-                onChange={(event) => setTitle(event.target.value)}
-                onKeyDown={(event) => {
-                  if (event.key === 'Enter') {
-                    event.preventDefault();
-                  }
-                }}
-              />
-            </div>
-
-            <button type="button" onClick={addItem}>
-              ＋ 追加する
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={() => setCreateOpen(true)}
+          >
+            ＋ 項目を登録
+          </button>
         </section>
+      )}
+
+      {canEdit && createOpen && (
+        <div
+          className="checklist-modal-backdrop"
+          onClick={() => setCreateOpen(false)}
+        >
+          <section
+            className="checklist-create-modal"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <header>
+              <div>
+                <p className="eyebrow">NEW CHECK ITEM</p>
+                <h2>チェック項目を登録</h2>
+              </div>
+
+              <button
+                type="button"
+                className="checklist-modal-close"
+                onClick={() => setCreateOpen(false)}
+                aria-label="閉じる"
+              >
+                ×
+              </button>
+            </header>
+
+            <label>アイコン</label>
+            <EmojiPicker value={icon} onChange={setIcon} />
+
+            <div className="checklist-icon-preview checklist-modal-preview">
+              <span>{icon || '✅'}</span>
+              <small>現在のアイコン</small>
+            </div>
+
+            <label>項目名</label>
+            <input
+              value={title}
+              placeholder="例：ご飯をあげた"
+              onChange={(event) => setTitle(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter') {
+                  event.preventDefault();
+                }
+              }}
+            />
+
+            <div className="checklist-modal-actions">
+              <button
+                type="button"
+                className="secondary-button"
+                onClick={() => setCreateOpen(false)}
+              >
+                キャンセル
+              </button>
+
+              <button
+                type="button"
+                onClick={addItem}
+              >
+                登録する
+              </button>
+            </div>
+          </section>
+        </div>
       )}
     </>
   );
