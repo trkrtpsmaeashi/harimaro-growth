@@ -1,12 +1,12 @@
 import { useMemo, useState } from 'react';
 import { supabase } from '../lib/supabase';
+import EmojiPicker from '../components/EmojiPicker';
 import {
   addDays,
   formatDateWithWeekday,
   today,
 } from '../lib/helpers';
 
-const ICON_CHOICES = ['🍚', '💧', '🎡', '💩', '🏠', '🌡️', '💊', '🧹', '✅'];
 
 function calculateStreak(itemId, logs, fromDate) {
   const checkedDates = new Set(
@@ -302,24 +302,11 @@ export default function ChecklistPage({
           <div className="checklist-create-grid">
             <div>
               <label>アイコン</label>
-              <div className="checklist-icon-picker">
-                {ICON_CHOICES.map((choice) => (
-                  <button
-                    key={choice}
-                    type="button"
-                    className={icon === choice ? 'active' : ''}
-                    onClick={() => setIcon(choice)}
-                  >
-                    {choice}
-                  </button>
-                ))}
+              <EmojiPicker value={icon} onChange={setIcon} />
+              <div className="checklist-icon-preview">
+                <span>{icon || '✅'}</span>
+                <small>現在のアイコン</small>
               </div>
-              <input
-                value={icon}
-                maxLength={4}
-                aria-label="任意のアイコン"
-                onChange={(event) => setIcon(event.target.value)}
-              />
             </div>
 
             <div>
