@@ -399,7 +399,11 @@ export default function App() {
         setCurrentPage={setPage}
         email={user.email}
         role={household?.my_role}
-        onLogout={() => supabase.auth.signOut()}
+        onLogout={async () => {
+          document.body.classList.remove('modal-open');
+          document.documentElement.classList.remove('modal-open');
+          await supabase.auth.signOut();
+        }}
       >
         {content}
       </Layout>

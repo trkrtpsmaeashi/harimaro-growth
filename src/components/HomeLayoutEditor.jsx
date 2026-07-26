@@ -30,12 +30,25 @@ export default function HomeLayoutEditor({
   useEffect(() => {
     if (!open) {
       document.body.classList.remove('modal-open');
+      document.documentElement.classList.remove('modal-open');
       return undefined;
     }
 
     document.body.classList.add('modal-open');
-    return () => document.body.classList.remove('modal-open');
+    document.documentElement.classList.add('modal-open');
+
+    return () => {
+      document.body.classList.remove('modal-open');
+      document.documentElement.classList.remove('modal-open');
+    };
   }, [open]);
+
+  useEffect(() => {
+    return () => {
+      document.body.classList.remove('modal-open');
+      document.documentElement.classList.remove('modal-open');
+    };
+  }, []);
 
   if (!open) return null;
 

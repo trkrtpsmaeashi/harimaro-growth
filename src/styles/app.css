@@ -4131,3 +4131,32 @@ body.modal-open{
     grid-template-columns:1fr;
   }
 }
+
+
+/* Sidebar scroll fix v4.0.1 */
+.sidebar{
+  overflow:hidden;
+}
+
+.sidebar-nav{
+  flex:1 1 auto;
+  min-height:0;
+  overflow-y:auto;
+  overflow-x:hidden;
+  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
+  padding-right:4px;
+  padding-bottom:14px;
+}
+
+.sidebar-footer{
+  flex:0 0 auto;
+}
+
+body.modal-open .sidebar{
+  touch-action:auto;
+}
+
+body.modal-open .sidebar-nav{
+  overflow-y:auto;
+}
